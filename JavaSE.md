@@ -230,7 +230,7 @@ do{
 
   * 数组对象存储在堆内存中
 
-    ![image-20240709170546009](C:/Users/HP/AppData/Roaming/Typora/typora-user-images/image-20240709170546009.png)
+    ![image-20240709232028310](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407092320655.png)
 
 * 数组分类
 
@@ -246,8 +246,6 @@ do{
   * 每个元素有索引，首元素索引0，以1递增
   * 以首元素的内存地址作为数组对象在堆内存中的地址
   * 所有数组对象都有length属性用来获取数组元素个数。末尾元素下标：length-1
-
-  
 
 * 数组优点
 
@@ -335,7 +333,7 @@ do{
 
 * 当一维数组中存储引用时的内存图
 
-  ![image-20240709194537652](C:/Users/HP/AppData/Roaming/Typora/typora-user-images/image-20240709194537652.png)
+  ![fc91c671d182645a28dc11819175669](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407092341337.png)
 
 
 
