@@ -335,7 +335,6 @@ do{
 
   ![fc91c671d182645a28dc11819175669](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407092341337.png)
 
-<<<<<<< HEAD
 ## 二维数组
 
 * 二维数组是一个特殊的一维数组，特殊在：这个一维数组中每个元素是一个一维数组
