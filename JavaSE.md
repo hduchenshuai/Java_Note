@@ -335,7 +335,75 @@ do{
 
   ![fc91c671d182645a28dc11819175669](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407092341337.png)
 
+## 二维数组
 
+* 二维数组是一个特殊的一维数组，特殊在：这个一维数组中每个元素是一个一维数组
+
+* 静态初始化
+
+  * 第一种方式：`int[][] arr = new int[][]{{1, 2, 3},{4, 5, 6},{7, 8, 9}};`(等长)
+
+    ​		       `int[][] arr = new int[][]{{1},{2,3},{4,5,6}};`(不等长)
+
+  * 第二种方式：`int[][] arr = {{1, 2, 3},{4, 5, 6},{7, 8, 9}};`
+
+* 动态初始化
+
+  * 等长：`int[][] arr = new int[3][4];`
+
+  * 不等长：`int[][] arr = new int[3][];`
+
+* 二维数组中元素的访问
+  * 第一个元素：`arr[0][0]`
+  * 最后一个元素：`arr[arr.length-1][arr[arr.length-1].length-1]`
+
+* 二维数组的遍历
+
+  ```java
+  public class ArrayTest {
+      public static void main(String[] args) {
+          // 动态初始化一个二维数组：等长
+          int[][] arr = new int[3][4];
+  
+          // 遍历
+          for (int i = 0; i < arr.length; i++) {
+              //System.out.println(arr[i]);
+              // arr[i] 是一个一维数组。
+              // 循环遍历一维数组
+              for (int j = 0; j < arr[i].length; j++) {
+                  System.out.print(arr[i][j] + " ");
+              }
+              System.out.println();
+          }
+  
+          // 动态初始化一个二维数组：不等长
+          int[][] nums = new int[3][];
+  
+          nums[0] = new int[]{1};
+          nums[1] = new int[]{2,3};
+          nums[2] = new int[]{4，5，6};
+  
+          // 遍历
+          for (int i = 0; i < nums.length; i++) {
+              for (int j = 0; j < nums[i].length; j++) {
+                  System.out.print(nums[i][j] + " ");
+              }
+              System.out.println();
+          }
+      }
+  }
+  ```
+
+  ```
+  0 0 0 0 
+  0 0 0 0 
+  0 0 0 0 
+  1 
+  2 3 
+  4 5 6 
+  ```
+
+  
 
 # 面向对象编程（基础）
 
@@ -504,7 +572,59 @@ class Tools {
 
 #### 2.8 可变参数
 
-Java允许将同一个类中多个同名同功能但参数个数不同的方法封装成一个方法，由可变参数实现
+* 语法格式：`数据类型...`
+
+  ```java
+  public class DemoTest {
+      public static void main(String[] args) {
+          m1();
+          m1(1);
+          m1(1,2,3);  
+      }
+      //int... nums就是一个可变长度的参数
+      public static void m1(int... nums){
+          System.out.println("m1方法执行了");
+      }
+  }
+  ```
+
+  ```
+  m1方法执行了
+  m1方法执行了
+  m1方法执行了
+  ```
+
+* 在形参列表中，可变长参数只能有一个，并且只能在参数列表的末尾出现
+
+  ```java
+  public static void m2(int... nums, int a){}//错误
+  public static void m3(int... nums, int... nums2){}//错误
+  ```
+
+* 可变长度参数可以当做数组来看待
+
+  ```java
+  public class DemoTest {
+      public static void main(String[] args) {
+          m4(new int[]{1,2,3});
+          //m4({1,2,3});//写法错误
+          m5(new int[]{4,5,6});
+          
+      }
+      public static void m4(int... nums){
+          for (int num : nums) {
+              System.out.print(num);//123
+          }
+      }
+      public static void m5(int... nums){
+          for (int i = 0; i < nums.length; i++) {
+              System.out.print(nums[i]);//456
+          }
+      }
+  }
+  ```
+
+  
 
 ## 3 变量作用域
 
@@ -1361,17 +1481,27 @@ class A {
 public static void main(String[] args){ }
 ```
 
-* main方法是虚拟机调用，所以该方法的访问权限必须是public
+* main方法是JVM调用，所以该方法的访问权限必须是public
 
-* Java虚拟机在执行nain方法时不必创建对象，所以必须加static
+* JVM在执行main方法时不必创建对象，所以必须加static
 
-* main方法接收String类型的数组参数，该数组中保存执行Java命令时传递给所运行的类的参数
+* JVM负责给main方法准备一个String[]一维数组的对象，String[] args作用是接收命令行参数用的
+
+  ```
+  执行命令：java ArrayTest abc def xyz
+  底层JVM是怎么做的？
+  命令行参数："abc def xyz"
+  JVM会将以上字符串以“空格”进行拆分，生成一个新的数组对象。
+  最后这个数组对象是：String[] args = {"abc","def","xyz"};
+  如果命令在使用的时候，没有提供参数，则args是个长度为0的数组，并不是null
+  ```
 
 * 在main方法中，可以直接调用main方法所在类的静态方法或静态属性
 
   但不能直接访问该类中的非静态成员，必须创建该类的一个实例对象后，才能通过这个对象去访问类中的非静态成员
 
-  
+
+
 
 ## 3. 代码块
 
@@ -2528,6 +2658,106 @@ public class StringBuilderDemo4 {
 ## 5. System 类
 
 ## 6. Arrays
+
+```java
+/**
+ * 测试数组工具类java.util.Arrays
+ */
+public class ArraysTest {
+    
+     /**
+     * public static String toString(数组) : 将数组对象转换成字符串形式。
+     */
+    @Test
+    public void testToString(){
+        int[] arr = {1,2,3,34,54};
+        System.out.println(arr); // [I@49e202ad
+        System.out.println(Arrays.toString(arr)); // [1, 2, 3, 34, 54]
+
+        String[] names = {"zhangsan", "lisi", "wangwu"};
+        System.out.println(names); // [Ljava.lang.String;@641147d0
+        System.out.println(Arrays.toString(names)); //[zhangsan, lisi, wangwu]
+    }
+    
+    /**
+     * public static String deepToString(Object[] a)作用是：适合于将多维数组转换成字符串。
+     */
+    @Test
+    public void testDeepToString(){
+        int[][] arr = {
+                {1},
+                {2,3},
+                {4,5,6}
+        };
+        System.out.println(Arrays.toString(arr)); // [[I@49e202ad, [I@1c72da34, [I@6b0c2d26]
+        System.out.println(Arrays.deepToString(arr)); // [[1], [2, 3], [4, 5, 6]]
+    }
+
+    
+     /**
+     * public static int[] copyOf(int[] 原数组, int 新数组长度)
+     * public static int[] copyOfRange(int[] 原数组, int 起始索引, int 结束索引)
+     */
+    @Test
+    public void testCopyOf(){
+        
+        int[] arr = {1,2,3,4,5,6,7,8,9};
+        int[] newArr = Arrays.copyOf(arr, 3);
+        System.out.println(Arrays.toString(newArr));//[1, 2, 3]
+
+        // 不包含结束索引
+        int[] newArr2 = Arrays.copyOfRange(arr, 2, 4);
+        System.out.println(Arrays.toString(newArr2));//[3, 4]
+    }
+    
+    /**
+     * public static <T> List<T> asList(T... a)：将一组数据转换成List集合
+     */
+    @Test
+    public void testAsList(){
+        List list = Arrays.asList(1, 2, 3, 4, 5);
+        for (int i = 0; i < list.size(); i++) {
+            System.out.print(list.get(i) + " ");//1 2 3 4 5
+        }
+    }
+    
+     /**
+     * 判断两个数组是否相等
+     * public static boolean equals(int[] a, int[] a2)
+     * public static boolean equals(Object[] a, Object[] a2)
+     */
+    @Test
+    public void testEquals(){
+        int[] arr1 = {1,2,3};
+        int[] arr2 = {2,1,3};
+        int[] arr3 = {1,2,3};
+        System.out.println(Arrays.equals(arr1, arr2));//false
+        System.out.println(Arrays.equals(arr1, arr3));//true
+
+        String[] names1 = new String[]{"abc", "def", "xyz"};
+        String[] names2 = new String[]{"abc", "def", "xyz"};
+        System.out.println(Arrays.equals(names1, names2));//true
+    }
+    
+     /**
+     * 填充数组
+     * public static void fill(int[] a, int val)
+     * public static void fill(int[] a, int fromIndex, int toIndex, int val)
+     */
+    @Test
+    public void testFill(){
+        int[] arr = new int[5]; // 5个0
+        Arrays.fill(arr, 10);
+        System.out.println(Arrays.toString(arr));//[10, 10, 10, 10, 10]
+
+        // 不包含toIndex
+        Arrays.fill(arr, 1, 3, 100);
+        System.out.println(Arrays.toString(arr));//[10, 100, 100, 10, 10]
+    }
+
+
+}
+```
 
 ![439727698c05726ee8eab1c420ef70d](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631014.png)
 
