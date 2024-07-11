@@ -343,7 +343,7 @@ do{
 
   * 第一种方式：`int[][] arr = new int[][]{{1, 2, 3},{4, 5, 6},{7, 8, 9}};`(等长)
 
-    ​		       `int[][] arr = new int[][]{{1},{2,3},{4,5,6}};`(不等长)
+    ​		               `int[][] arr = new int[][]{{1},{2,3},{4,5,6}};`(不等长)
 
   * 第二种方式：`int[][] arr = {{1, 2, 3},{4, 5, 6},{7, 8, 9}};`
 
@@ -2480,109 +2480,212 @@ public class Wrapper01 {
 }
 ```
 
-## 2. String 类
+## String 
 
-### 2.1 String类概述
+### String类概述
 
 String 类代表字符串，Java 程序中的所有字符串文字（例如“abc”）都被实现为此类的实例。也就是说，Java 程序中所有的双引号字符串，都是 String 类的对象。String 类在 java.lang 包下，所以使用的时候不需要导包！
 
-### 2.2 String类的特点
+### String类的特点
 
-- 字符串不可变，它们的值在创建后不能被更改
-- 虽然 String 的值是不可变的，但是它们可以被共享
-- 字符串效果上相当于字符数组( char[] )，但是底层原理是字节数组( byte[] )
+* 在java程序当中，凡是带有双引号的字符串，在编译阶段就已经完全确定了：这些字符串字面量将来会放在字符串常量池中。在JVM启动的时候，会进行一系列的初始化，其中就包括字符串常量池的初始化，在初始化字符串常量池的时候，会将所有的字符串字面量全部提前创建好，放到字符串常量池中。在执行java程序的过程中，如果需要这个字符串字面量对象，直接从字符串常量池中获取，提高执行效率。字符串常量池是一种缓存技术。提前创建好对象放进去，用的时候直接拿。（字符串字面量在JVM启动的时候就会创建好）
 
-### 2.3 String类的构造方法
+* Java8之后：字符串常量池在堆内存当中
+
+* 创建字符串对象两种方式的区别
+
+  * 通过构造方法创建：通过 new 创建的字符串对象，每一次 new 都会申请一个内存空间，即使内容相同，但是地址值不同
+  * 直接赋值方式创建：以“ ”方式给出的字符串，只要字符序列相同(顺序和大小写)，无论在程序代码中出现几次，JVM 都只会建立一个 String 对象，并在字符串池中维护。
+
+  ```java
+  public class StringTest {
+      public static void main(String[] args) {
+  
+          String s1 = "hello";
+          String s2 = "hello";
+          System.out.println(s1 == s2); // true
+  
+          String s3 = "test";
+          String s4 = new String("test");
+          System.out.println(s3 == s4); // false
+  
+          // string重写了equals()：比较两个字符串内容是否相同、区分大小写
+          System.out.println(s3.equals(s4)); // true
+      }
+  }
+  ```
+
+- 字符串一旦创建是不可变的
+
+  ```java
+  // x是可以变的。因为x只是一个普通的变量。可以指向其他字符串对象
+  // 谁不能变？字符串字面量一旦创建不可变，在字符串常量池中。
+  // "helloworld" 不能改变了。
+  // "其他字符串" 不能改变了。
+  String x = "helloworld";
+  x = "其他字符串";
+  ```
+
+  原因：String源码中有一个属性：`private final byte[] value;`
+
+  ​            数组一旦创建长度不可变；final修饰：value不能再指向其他对象；private修饰：类外无法访问;
+
+- String的拼接
+
+  ```java
+  public class StringTest{
+      public static void main(String[] args) {
+          String s1 = "abc";
+          String s2 = "def";
+          String s3 = s1 + s2;
+          String s4 = "abcdef"; 
+          
+          System.out.println(s3 == s4); // false
+  		/*s3指向的对象，没有在字符串常量池中。在堆中。
+  		底层实际上在进行 + 的时候，且这个 + 两边至少有一个是变量，会创建一个StringBuilder对象，进行字		符串的拼接，最后的时候会自动调用StringBuilder对象的toString()方法，再将StringBuilder转换成			String对象。*/
+         
+  
+          /*以下程序中 + 两边都是字符串字面量，这种情况java对其进行优化：
+          在编译的时候就会进行字符串的拼接，因此以下程序在字符串常量池中只有一个： “javatest” */
+  		String x = "java" + "test"; // 等同于：String x = "javatest";
+          String y = "javatest";
+          System.out.println(x == y); // true
+  
+          // 以上程序中s3指向了堆中的一个字符串对象，并没有在常量池中。
+          // 如果这个字符串使用比较频繁，希望将其加入到字符串常量池中，怎么办？
+          String s5 = s3.intern();
+          System.out.println(s4 == s5); // true
+  
+          String m = "m";
+          String f = m + "e";
+          String str = f.intern(); // 将"me"放入字符串常量池中，并且将"me"对象的地址返回。
+  
+          System.out.println(str == "me"); // true
+  
+      }
+  }
+  ```
+
+  
+
+### String类的构造方法
 
 - 常用的构造方法
 
-  | 方法名                      | 说明                                      |
-  | --------------------------- | ----------------------------------------- |
-  | public   String()           | 创建一个空白字符串对象，不含有任何内容    |
-  | public   String(char[] chs) | 根据字符数组的内容，来创建字符串对象      |
-  | public   String(byte[] bys) | 根据字节数组的内容，来创建字符串对象      |
-  | String s =   “abc”;         | 直接赋值的方式创建字符串对象，内容就是abc |
+  | 方法名                                              | 说明                                                         |
+  | --------------------------------------------------- | ------------------------------------------------------------ |
+  | public String()                                     | 创建一个空白字符串对象，不含有任何内容                       |
+  | public String(char[] value)                         | 根据字符数组创建一个新的字符串对象                           |
+  | public String(char[] value, int offset, int  count) | 根据字符数组的指定部分创建一个新的字符串对象                 |
+  | public String(byte[] bytes)                         | 根据字节数组创建一个新的字符串对象，默认使用平台默认的字符集进行解码 |
+  | public String(byte[] bytes, int offset, int length) | 根据字节数组的指定部分创建一个新的字符串对象，默认使用平台默认的字符集进行解码 |
+  | public String(byte[] bytes, String charsetName)     | 根据字节数组和指定的字符集名称创建一个新的字符串对象         |
+  | public String(byte[] bytes, Charset charset)        | 根据字节数组和指定的字符集创建一个新的字符串对象             |
+  | public String(String original)                      | 通过复制现有字符串创建一个新的字符串对象                     |
 
 - 示例代码
 
   ```java
-  public class StringDemo01 {
+  public class StringTest{
       public static void main(String[] args) {
           //public String()：创建一个空白字符串对象，不含有任何内容
           String s1 = new String();
-          System.out.println("s1:" + s1);
+          System.out.println("s1:" + s1);//s1:
   
-          //public String(char[] chs)：根据字符数组的内容，来创建字符串对象
-          char[] chs = {'a', 'b', 'c'};
+          //public String(char[] value) ：根据字符数组创建一个新的字符串对象
+          char[] chs = {'a', 'b', 'c', 'd'};
           String s2 = new String(chs);
-          System.out.println("s2:" + s2);
+          System.out.println("s2:" + s2);//s2:abcd
+          
+          //public String(char[] value, int offset, int count)
+          //根据字符数组的指定部分创建一个新的字符串对象
+          String s3 = new String(chs,1,2);
+          System.out.println("s3:" + s3);//s3:bc
   
-          //public String(byte[] bys)：根据字节数组的内容，来创建字符串对象
-          byte[] bys = {97, 98, 99};
-          String s3 = new String(bys);
-          System.out.println("s3:" + s3);
+          //public String(byte[] bytes)：根据字节数组创建一个新的字符串对象
+          byte[] bytes = {97, 98, 99, 100};
+          // 将byte[]数组转换成字符串String，是一个解码的过程。采用的是平台默认的字符编码方式进行的解码。
+          String s4 = new String(bytes);
+          System.out.println("s4:" + s4);//s4:abcd
+          
+  		//public String(byte[] bytes, int offset, int length)
+          //将byte[]数组的一部分转换成字符串（解码的过程，也是采用平台默认的字符集。）
+          String s5 = new String(bytes,1,2);
+          System.out.println("s5:" + s5);//s5:bc
+          
+          // 乱码的本质：在进行编码和解码的时候没有使用同一个字符编码方式。
+          // 先将字符串转换成byte[]数组（这个过程是一个编码的过程）
+          // 这里先按照GBK的字符集进行编码。（GBK是简体中文）
+          //byte[] bs = "你好，世界".getBytes("UTF-8");
+          byte[] bs = "你好，世界".getBytes(StandardCharsets.UTF_8);
   
-          //String s = “abc”;	直接赋值的方式创建字符串对象，内容就是abc
-          String s4 = "abc";
-          System.out.println("s4:" + s4);
+          // 将以上的byte[]数组转换成字符串（这个过程是一个解码的过程）
+          //String s6 = new String(bs, "UTF-8");
+          //根据字节数组和指定的字符集名称创建一个新的字符串对象
+          String s6 = new String(bs, StandardCharsets.UTF_8);
+  
+          System.out.println("s6:" + s6);//s6:你好，世界
+  
+          // 在不知道字符编码方式的时候，可以动态获取平台的编码方式。（使用平台默认的字符集进行编码）
+          byte[] bs2 = "世界和平".getBytes(Charset.defaultCharset());
+  
+          //使用平台默认的字符集进行解码。
+          //根据字节数组和指定的字符集创建一个新的字符串对象
+          String s7 = new String(bs2, Charset.defaultCharset());
+          System.out.println("s7:" + s7);//s7:世界和平
+  		
+          // public String(String original)：复制现有字符串创建一个新的字符串对象
+          //这个方法被@IntrinsicCandidate标注，这个注解是Java16引入的,作用是告诉编译器,该方法或构造函		  数是一个内在的候选方法,可以被优化和替换为更高效的代码。因此它是不建议使用的
+          String s8 = new String("STRING"); // 底层会有两个对象，一个是"STRING"在字符串常量池中。一个是在堆内存中。浪费内存。
+  		System.out.println("s8:" + s8);//s8:STRING
       }
   }
   ```
 
-### 2.4 创建字符串对象两种方式的区别
+### String的常用方法
 
-- 通过构造方法创建
+| 方法名                                                       | 说明                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| char charAt(int index)                                       | 返回索引处的char值                                           |
+| int length()                                                 | 获取字符串长度                                               |
+| boolean isEmpty()                                            | 判断字符串是否为空字符串，如果length()是0就是空字符串,指向null的String变量不是空，使用该方法会报错 |
+| boolean equals(Object anObject)                              | 判断两个字符串是否相等                                       |
+| boolean equalsIgnoreCase(String  anotherString )             | 判断两个字符串是否相等，忽略大小写                           |
+| boolean contains(CharSequence s)                             | 判断当前字符串中是否包含某个子字符串                         |
+| boolean startsWith(String prefix)                            | 判断当前字符串是否以某个字符串开头                           |
+| boolean endsWith(String suffix)                              | 判断当前字符串是否以某个字符串结尾                           |
+| int compareTo(String anotherString)                          | 两个字符串按照字典顺序比较大小                               |
+| int compareToIgnoreCase(String str)                          | 两个字符串按照字典顺序比较大小，比较时忽略大小写             |
+| int indexOf(String str)                                      | 获取当前字符串中str字符串第一次出现处的下标                  |
+| int indexOf(String str, int fromIndex)                       | 从当前字符串的fromIndex下标开始（包括fromIndex）往右搜索，获取当前字符串中str字符串第一次出现处的下标 |
+| int lastIndexOf(String str)                                  | 获取当前字符串中str字符串的最后一次出现处的下标              |
+| int lastIndexOf(String str, int fromIndex)                   | 从当前字符串的fromIndex下标开始（包括fromIndex）往左搜索，获取当前字符串中str字符串最后一次出现处的下标（最后指的是当前字符串从左往右，左为前，右为后） |
+| byte[] getBytes()                                            | 将字符串转换成字节数组。其实就是对字符串进行编码。默认按照系统默认字符集 |
+| byte[] getBytes(String charsetName)                          | 将字符串按照指定名称的字符集的方式进行编码                   |
+| byte[] getBytes(Charset charset)                             | 将字符串按照指定字符集的方式进行编码                         |
+| char[] toCharArray()                                         | 将字符串转换字符数组                                         |
+| String toLowerCase()                                         | 转小写                                                       |
+| String toUpperCase()                                         | 转大写                                                       |
+| String concat(String str)                                    | 进行字符串的拼接操作；和 + 的区别？ ①+ 既可以进行求和，也可以进行字符串的拼接，底层拼接时会创建StringBuilder对象进行拼接。+ 拼接null时不会出现空指针异常（直接把null当字符串拼接了）                                                                                                              ②concat方法参数只能是字符串类型，拼接时不会创建StringBuilder对象，拼接完成后返回一个新的String对象。拼接null会出现空指针异常。③+ 使用较多。如果进行大量字符串拼接，这两个都不合适 |
+| String substring(int beginIndex)                             | 从指定下标beginIndex开始（包括beginIndex）截取子字符串       |
+| String substring(int beginIndex, int endIndex)               | 从指定下标beginIndex开始（包括）到指定下标endIndex结束（不包括）截取子字符串 |
+| String trim()                                                | 去除字符串前后空白（只能去除ASCII码中的空格和制表符）        |
+| String strip()                                               | 去除字符串前后空白（支持所有的编码形式的空白，可以将全角空格去除，\u3000是全角空格 |
+| String stripLeading()                                        | 去除前空白                                                   |
+| String stripTrailing()                                       | 去除后空白                                                   |
+| String intern()                                              | 获取字符串常量池中的字符串，如果常量池中没有，则将字符串加入常量池并返回 |
+| static String join(CharSequence d, CharSequence... elements) | 将多个字符串以某个分隔符连接                                 |
+| static String valueOf(boolean b)                             | 以下所有的静态方法valueOf作用是将非字符串类型的数据转换为字符串形式 |
+| static String valueOf(char c)                                |                                                              |
+| static String valueOf(char[] data)                           |                                                              |
+| static String valueOf(char[] data, int offset, int count)    |                                                              |
+| static String valueOf(double d)                              |                                                              |
+| static String valueOf(int i)                                 |                                                              |
+| static String valueOf(Object obj)                            | 自定义类要重写toString方法                                   |
 
-  ​	通过 new 创建的字符串对象，每一次 new 都会申请一个内存空间，虽然内容相同，但是地址值不同
 
-- 直接赋值方式创建
 
-  ​	以“ ”方式给出的字符串，只要字符序列相同(顺序和大小写)，无论在程序代码中出现几次，JVM 都只会建立一个 String 对象，并在字符串池中维护。字符串池在jdk7以前放在方法区，jdk7开始放在堆内存里
-
-### 2.5 字符串的比较
-
-#### 2.5.1==号的作用
-
-- 比较基本数据类型：比较的是具体的值
-- 比较引用数据类型：比较的是对象地址值
-
-#### 2.5.2equals方法的作用
-
-- 方法介绍
-
-  ```java
-  public boolean equals(String s)     比较两个字符串内容是否相同、区分大小写
-  ```
-
-- 示例代码
-
-  ```java
-  public class StringDemo02 {
-      public static void main(String[] args) {
-          //构造方法的方式得到对象
-          char[] chs = {'a', 'b', 'c'};
-          String s1 = new String(chs);
-          String s2 = new String(chs);
-  
-          //直接赋值的方式得到对象
-          String s3 = "abc";
-          String s4 = "abc";
-  
-          //比较字符串对象地址是否相同
-          System.out.println(s1 == s2);//false
-          System.out.println(s1 == s3);//false
-          System.out.println(s3 == s4);//ture
-          System.out.println("--------");
-  
-          //比较字符串内容是否相同
-          System.out.println(s1.equals(s2));//ture
-          System.out.println(s1.equals(s3));//ture
-          System.out.println(s3.equals(s4));//ture
-      }
-  }
-  ```
-
-### 2.6 StringBuilder
+### StringBuilder
 
 当我们在拼接字符串和反转字符串的时候会使用到
 
@@ -2677,6 +2780,16 @@ public class ArraysTest {
         String[] names = {"zhangsan", "lisi", "wangwu"};
         System.out.println(names); // [Ljava.lang.String;@641147d0
         System.out.println(Arrays.toString(names)); //[zhangsan, lisi, wangwu]
+        
+        Person p1 = new Person(20);
+        Person p2 = new Person(22);
+        Person p3 = new Person(19);
+        Person p4 = new Person(18);
+        Person[] persons = {p1, p2, p3, p4};
+        System.out.println(persons);//[Lcom.powernode.javase.Person;@71248c21
+        System.out.println(Arrays.toString(persons)); 
+        //自定义Person中，需要重写toString方法，才能输出如下：
+        //[Person{age=20}, Person{age=22}, Person{age=19}, Person{age=18}]
     }
     
     /**
@@ -2696,6 +2809,10 @@ public class ArraysTest {
     
      /**
      * public static int[] copyOf(int[] 原数组, int 新数组长度)
+     * 新数组长度<原数组长度：部分拷贝
+     * 新数组长度=原数组长度：完全拷贝
+     * 新数组长度>原数组长度：全部拷贝，多余位置补默认值
+     *
      * public static int[] copyOfRange(int[] 原数组, int 起始索引, int 结束索引)
      */
     @Test
@@ -2754,14 +2871,155 @@ public class ArraysTest {
         Arrays.fill(arr, 1, 3, 100);
         System.out.println(Arrays.toString(arr));//[10, 100, 100, 10, 10]
     }
+    
+     /**
+     * public static void sort(数组):给数组排序
+     * 基本类型数组：默认升序
+     * 自定义类型数组：自定义类必须实现Comparable接口，并且实现compareTo方法，在这个方法中编写比较规则
+     */
+    @Test
+    public void testSort(){
+        int[] arr = {3,6,7,2,4,1,5,9,8};
+        Arrays.sort(arr);
+        System.out.println(Arrays.toString(arr));//[1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+        String[] strs = {"d", "c", "a", "b"};
+        String[] strs1 = {"a", "ac", "ab", "b"};
+
+        // 应该是根据字典的顺序排序的。
+        Arrays.sort(strs);
+        Arrays.sort(strs1);
+        System.out.println(Arrays.toString(strs));//[a, b, c, d]
+        System.out.println(Arrays.toString(strs1));//[a, ab, ac, b]
+
+        // 能不能对Person数组排序
+        Person p1 = new Person(20);
+        Person p2 = new Person(22);
+        Person p3 = new Person(19);
+        Person p4 = new Person(18);
+/*
+如果自定义Person类没有实现Comparable接口，并且实现compareTo方法则会产生如下异常：java.lang.ClassCastException: class com.powernode.javase.Person cannot be cast to class java.lang.Comparable
+猜测，底层一定有这样一行代码：
+Comparable c = (Comparable) p1; 
+为什么会报这样的错误呢？因为p1和c没有继承关系
+也进一步说明了我们的Person类不是可比较的。
+Comparable字面意思：可比较的。
+*/
+        Person[] persons = {p1, p2, p3, p4};
+
+        Arrays.sort(persons);
+        System.out.println(Arrays.toString(persons));
+        //Person类实现Comparable接口，并且重写compareTo方法和toString方法后，输出如下：
+        //[Person{age=18}, Person{age=19}, Person{age=20}, Person{age=22}]
+    }
+    
+     /**
+     * 启用多核CPU并行排序。
+     * 首先你的电脑是支持多核的。
+     * 注意：数据量太小的话，不要调用这个方法，因为启动多核也是需要耗费资源的。
+     * Java8引入的方法。
+     * 数据量较大的时候，建议使用这个方法效率比较高。
+     * 通过源码分析：如果超过4096个长度，则会启用多核。
+     * 4096以内就自动调用sort方法就行了。
+     */
+    @Test
+    public void testParallelSort(){
+        int[] arr = new int[100000000];
+        Random random = new Random();//生成一个在 0 到 99999999 之间的随机整数
+        for (int i = 0; i < arr.length; i++) {
+            int num = random.nextInt(100000000);
+            arr[i] = num;
+        }
+
+        // 获取系统当前时间的毫秒数（1970-1-1 0:0:0 000到当前系统时间的总毫秒数 1秒=1000毫秒）
+        long begin = System.currentTimeMillis();
+
+        // 排序
+        Arrays.parallelSort(arr);//耗时2766
+        //Arrays.sort(arr);//耗时9919
+        // 获取系统当前时间的毫秒数
+        long end = System.currentTimeMillis();
+
+        // 耗时
+        System.out.println(end - begin);
+    }
+    
+    /**
+     * public static int binarySearch(数组, 查找的元素)：二分查找法查找元素
+     * 细节1：二分查找的前提:数组中的元素必须是升序的
+     * 细节2：如果查找的元素是存在的，则返回真实索引；如果不存在，则返回的是 -插入点-1
+     * 为什么要-1？
+     * 如下述代码，我要查找数字0，此时0不存在，如果返回的是-插入点，即返回-0
+     * 为避免这种情况，Java在这个基础上又减一
+     */
+    @Test
+    public void testBinarySearch(){
+        int[] arr = {1,2,3,4,5,6,7};
+        System.out.println(Arrays.binarySearch(arr, 5));//4
+        System.out.println(Arrays.binarySearch(arr, 0));//-1
+        System.out.println(Arrays.binarySearch(arr, 8));//-8
+    }
 
 
 }
 ```
 
-![439727698c05726ee8eab1c420ef70d](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631014.png)
+```java
+public class Person implements Comparable{
+    private int age;
+    private String name;
 
-<img src="javanote01.assets/d6388b4d685e572a869c61f250266f7.png" alt="d6388b4d685e572a869c61f250266f7" style="zoom:150%;" /><img src="https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631593.png" alt="21878afbe1e9bf88e9745c449f38920" style="zoom:150%;" /><img src="javanote01.assets/2f0757ee950ac52e32bac5d7e23b6cf.png" alt="2f0757ee950ac52e32bac5d7e23b6cf" style="zoom:150%;" /><img src="javanote01.assets/97ac9e6e22bec5f3d6a98bc992d4efd-1705305963579-9.png" style="zoom:150%;" /><img src="https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631814.png" alt="27fa611e922929b061687e6f9b3575e" style="zoom:150%;" /><img src="https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631504.png" alt="c3c24146d752000c9801bf50c8dca23" style="zoom:150%;" />
+    public Person() {
+    }
+
+    public Person(int age) {
+        this.age = age;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "age=" + age +
+                '}';
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        // 编写比较规则。
+        // 根据年龄进行比较
+        // p1.compareTo(p2) p1和p2之间进行比较。
+        // this是p1
+        // o是p2
+        // 当前对象的年龄
+        //this.age;
+
+        // 另一个对象的年龄
+        Person person = (Person) o;
+        //person.age;
+
+        // 按照年龄进行比较。
+        return this.age - person.age;//按年龄升序
+        //return person.age - this.age;//按年龄降序
+
+        // 按照字符串进行比较。
+        //String类已经实现Comparable接口以及实现compareTo方法
+        // 升序
+        //return this.name.compareTo(person.name);
+        // 降序
+        //return person.name.compareTo(this.name);
+    }
+}
+```
+
+
 
 ## 9. BigInterger 和 BigDecimal 类
 
