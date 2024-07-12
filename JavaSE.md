@@ -2411,19 +2411,27 @@ class User{
 
 # 常用API
 
-## 1.包装类（Wrapper）
+## 包装类
 
 * **包装类的分类**
-  * 针对八种基本数据类型相应的引用类型—包装类
+  
+  * Java8针对八种基本数据类型提供相应的引用数据类型—包装类
   * 有了类的特点，就可以调用类中的方法
+  
+  | 8种基本数据类型 | 包装类                  |
+  | :-------------- | :---------------------- |
+  | byte            | java.lang.Byte          |
+  | short           | java.lang.Short         |
+  | int             | java.lang.**Integer**   |
+  | long            | java.lang.Long          |
+  | float           | java.lang.Float         |
+  | double          | java.lang.Double        |
+  | boolean         | java.lang.Boolean       |
+  | char            | java.lang.**Character** |
+  
+  * 其中Integer使用最多，以它为代表进行学习
 
-![8da2eee40cb3d09ed5eecad3dd9bc39](javanote01.assets/8da2eee40cb3d09ed5eecad3dd9bc39.png)
 
-<img src="javanote.assets/0860e33f124b537a2bab1f6c4a79a16.png" alt="0860e33f124b537a2bab1f6c4a79a16" style="zoom:150%;" />
-
-<img src="javanote.assets/479a366eb6d05d91cf87515ccdcb98a.png" alt="479a366eb6d05d91cf87515ccdcb98a" style="zoom:150%;" />
-
-<img src="javanote.assets/7a2186ddec50e9e207eaa75b3dfc6a3.png" alt="7a2186ddec50e9e207eaa75b3dfc6a3" style="zoom:150%;" />
 
 * **包装类和基本数据类型的转换**
 
@@ -2480,7 +2488,266 @@ public class Wrapper01 {
 }
 ```
 
-## String 
+## Arrays
+
+```java
+/**
+ * 测试数组工具类java.util.Arrays
+ */
+public class ArraysTest {
+    
+     /**
+     * public static String toString(数组) : 将数组对象转换成字符串形式。
+     */
+    @Test
+    public void testToString(){
+        int[] arr = {1,2,3,34,54};
+        System.out.println(arr); // [I@49e202ad
+        System.out.println(Arrays.toString(arr)); // [1, 2, 3, 34, 54]
+
+        String[] names = {"zhangsan", "lisi", "wangwu"};
+        System.out.println(names); // [Ljava.lang.String;@641147d0
+        System.out.println(Arrays.toString(names)); //[zhangsan, lisi, wangwu]
+        
+        Person p1 = new Person(20);
+        Person p2 = new Person(22);
+        Person p3 = new Person(19);
+        Person p4 = new Person(18);
+        Person[] persons = {p1, p2, p3, p4};
+        System.out.println(persons);//[Lcom.powernode.javase.Person;@71248c21
+        System.out.println(Arrays.toString(persons)); 
+        //自定义Person中，需要重写toString方法，才能输出如下：
+        //[Person{age=20}, Person{age=22}, Person{age=19}, Person{age=18}]
+    }
+    
+    /**
+     * public static String deepToString(Object[] a)作用是：适合于将多维数组转换成字符串。
+     */
+    @Test
+    public void testDeepToString(){
+        int[][] arr = {
+                {1},
+                {2,3},
+                {4,5,6}
+        };
+        System.out.println(Arrays.toString(arr)); // [[I@49e202ad, [I@1c72da34, [I@6b0c2d26]
+        System.out.println(Arrays.deepToString(arr)); // [[1], [2, 3], [4, 5, 6]]
+    }
+
+    
+     /**
+     * public static int[] copyOf(int[] 原数组, int 新数组长度)
+     * 新数组长度<原数组长度：部分拷贝
+     * 新数组长度=原数组长度：完全拷贝
+     * 新数组长度>原数组长度：全部拷贝，多余位置补默认值
+     *
+     * public static int[] copyOfRange(int[] 原数组, int 起始索引, int 结束索引)
+     */
+    @Test
+    public void testCopyOf(){
+        
+        int[] arr = {1,2,3,4,5,6,7,8,9};
+        int[] newArr = Arrays.copyOf(arr, 3);
+        System.out.println(Arrays.toString(newArr));//[1, 2, 3]
+
+        // 不包含结束索引
+        int[] newArr2 = Arrays.copyOfRange(arr, 2, 4);
+        System.out.println(Arrays.toString(newArr2));//[3, 4]
+    }
+    
+    /**
+     * public static <T> List<T> asList(T... a)：将一组数据转换成List集合
+     */
+    @Test
+    public void testAsList(){
+        List list = Arrays.asList(1, 2, 3, 4, 5);
+        for (int i = 0; i < list.size(); i++) {
+            System.out.print(list.get(i) + " ");//1 2 3 4 5
+        }
+    }
+    
+     /**
+     * 判断两个数组是否相等
+     * public static boolean equals(int[] a, int[] a2)
+     * public static boolean equals(Object[] a, Object[] a2)
+     */
+    @Test
+    public void testEquals(){
+        int[] arr1 = {1,2,3};
+        int[] arr2 = {2,1,3};
+        int[] arr3 = {1,2,3};
+        System.out.println(Arrays.equals(arr1, arr2));//false
+        System.out.println(Arrays.equals(arr1, arr3));//true
+
+        String[] names1 = new String[]{"abc", "def", "xyz"};
+        String[] names2 = new String[]{"abc", "def", "xyz"};
+        System.out.println(Arrays.equals(names1, names2));//true
+    }
+    
+     /**
+     * 填充数组
+     * public static void fill(int[] a, int val)
+     * public static void fill(int[] a, int fromIndex, int toIndex, int val)
+     */
+    @Test
+    public void testFill(){
+        int[] arr = new int[5]; // 5个0
+        Arrays.fill(arr, 10);
+        System.out.println(Arrays.toString(arr));//[10, 10, 10, 10, 10]
+
+        // 不包含toIndex
+        Arrays.fill(arr, 1, 3, 100);
+        System.out.println(Arrays.toString(arr));//[10, 100, 100, 10, 10]
+    }
+    
+     /**
+     * public static void sort(数组):给数组排序
+     * 基本类型数组：默认升序
+     * 自定义类型数组：自定义类必须实现Comparable接口，并且实现compareTo方法，在这个方法中编写比较规则
+     */
+    @Test
+    public void testSort(){
+        int[] arr = {3,6,7,2,4,1,5,9,8};
+        Arrays.sort(arr);
+        System.out.println(Arrays.toString(arr));//[1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+        String[] strs = {"d", "c", "a", "b"};
+        String[] strs1 = {"a", "ac", "ab", "b"};
+
+        // 应该是根据字典的顺序排序的。
+        Arrays.sort(strs);
+        Arrays.sort(strs1);
+        System.out.println(Arrays.toString(strs));//[a, b, c, d]
+        System.out.println(Arrays.toString(strs1));//[a, ab, ac, b]
+
+        // 能不能对Person数组排序
+        Person p1 = new Person(20);
+        Person p2 = new Person(22);
+        Person p3 = new Person(19);
+        Person p4 = new Person(18);
+/*
+如果自定义Person类没有实现Comparable接口，并且实现compareTo方法则会产生如下异常：java.lang.ClassCastException: class com.powernode.javase.Person cannot be cast to class java.lang.Comparable
+猜测，底层一定有这样一行代码：
+Comparable c = (Comparable) p1; 
+为什么会报这样的错误呢？因为p1和c没有继承关系
+也进一步说明了我们的Person类不是可比较的。
+Comparable字面意思：可比较的。
+*/
+        Person[] persons = {p1, p2, p3, p4};
+
+        Arrays.sort(persons);
+        System.out.println(Arrays.toString(persons));
+        //Person类实现Comparable接口，并且重写compareTo方法和toString方法后，输出如下：
+        //[Person{age=18}, Person{age=19}, Person{age=20}, Person{age=22}]
+    }
+    
+     /**
+     * 启用多核CPU并行排序。
+     * 首先你的电脑是支持多核的。
+     * 注意：数据量太小的话，不要调用这个方法，因为启动多核也是需要耗费资源的。
+     * Java8引入的方法。
+     * 数据量较大的时候，建议使用这个方法效率比较高。
+     * 通过源码分析：如果超过4096个长度，则会启用多核。
+     * 4096以内就自动调用sort方法就行了。
+     */
+    @Test
+    public void testParallelSort(){
+        int[] arr = new int[100000000];
+        Random random = new Random();//生成一个在 0 到 99999999 之间的随机整数
+        for (int i = 0; i < arr.length; i++) {
+            int num = random.nextInt(100000000);
+            arr[i] = num;
+        }
+
+        // 获取系统当前时间的毫秒数（1970-1-1 0:0:0 000到当前系统时间的总毫秒数 1秒=1000毫秒）
+        long begin = System.currentTimeMillis();
+
+        // 排序
+        Arrays.parallelSort(arr);//耗时2766
+        //Arrays.sort(arr);//耗时9919
+        // 获取系统当前时间的毫秒数
+        long end = System.currentTimeMillis();
+
+        // 耗时
+        System.out.println(end - begin);
+    }
+    
+    /**
+     * public static int binarySearch(数组, 查找的元素)：二分查找法查找元素
+     * 细节1：二分查找的前提:数组中的元素必须是升序的
+     * 细节2：如果查找的元素是存在的，则返回真实索引；如果不存在，则返回的是 -插入点-1
+     * 为什么要-1？
+     * 如下述代码，我要查找数字0，此时0不存在，如果返回的是-插入点，即返回-0
+     * 为避免这种情况，Java在这个基础上又减一
+     */
+    @Test
+    public void testBinarySearch(){
+        int[] arr = {1,2,3,4,5,6,7};
+        System.out.println(Arrays.binarySearch(arr, 5));//4
+        System.out.println(Arrays.binarySearch(arr, 0));//-1
+        System.out.println(Arrays.binarySearch(arr, 8));//-8
+    }
+}
+```
+
+```java
+public class Person implements Comparable{
+    private int age;
+    private String name;
+
+    public Person() {
+    }
+
+    public Person(int age) {
+        this.age = age;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "age=" + age +
+                '}';
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        // 编写比较规则。
+        // 根据年龄进行比较
+        // p1.compareTo(p2) p1和p2之间进行比较。
+        // this是p1
+        // o是p2
+        // 当前对象的年龄
+        //this.age;
+
+        // 另一个对象的年龄
+        Person person = (Person) o;
+        //person.age;
+
+        // 按照年龄进行比较。
+        return this.age - person.age;//按年龄升序
+        //return person.age - this.age;//按年龄降序
+
+        // 按照字符串进行比较。
+        //String类已经实现Comparable接口以及实现compareTo方法
+        // 升序
+        //return this.name.compareTo(person.name);
+        // 降序
+        //return person.name.compareTo(this.name);
+    }
+}
+```
+
+
+
+## String
 
 ### String类概述
 
@@ -2683,9 +2950,121 @@ String 类代表字符串，Java 程序中的所有字符串文字（例如“ab
 | static String valueOf(int i)                                 |                                                              |
 | static String valueOf(Object obj)                            | 自定义类要重写toString方法                                   |
 
+### String常见面试题
+
+```java
+/**
+ * String类常见的面试题。
+ */
+public class StringExam {
+    @Test
+    public void test1() {
+        String s1 = "abc";
+        String s2 = new String("abc");
+        System.out.println(s1 == s2); // false
+        System.out.println(s1.equals(s2)); // true
+    }
+
+    @Test
+    public void test2() {
+        // 这种拼接会在编译阶段完成。编译器优化策略。
+        String s1 = "a" + "b" + "c";
+        String s2 = "abc";
+        System.out.println(s1 == s2); // true
+    }
+
+    @Test
+    public void test3() {
+        String s1 = "abc";
+        String s2 = "ab";
+        String s3 = s2 + "c";
+        System.out.println(s1 == s3); // false
+        System.out.println(s1.equals(s3)); // true
+    }
+
+    @Test
+    public void test4() {
+        // 问题：创建了几个对象？
+        // 字符串常量池中1个
+        String s1 = "a";
+        // 字符串常量池中1个 ，堆1个。
+        String s2 = new String("b");
+        // 堆中2个。（StringBuilder对象，String对象）
+        String s3 = s1 + s2;
+    }
+
+    @Test
+    public void test5() {
+        // 问题：创建了几个对象？
+        // 6个对象
+        // 字符串常量池中2个
+        // StringBuilder1个
+        // 堆中的String 3个。
+        String s = new String("a") + new String("b");
+    }
+
+    @Test
+    public void test6() {
+        // 这个程序会出现异常吗？如果没有异常，结果是什么？
+        // 不会出现异常，结果是：nullnull
+        String s1 = null;
+        String s2 = s1 + null;
+        //底层：String s2 = String.valueOf(s1) + null;
+        System.out.println(s2);
+    }
+
+    @Test
+    public void test7() {
+
+        String s1 = "ab";
+        
+        final String s2 = "b";
+        String s3 = "a" + s2;
+        //加了final代表常量，编译的时候就放常量池，上两行代码等同于：String s3 = "a" + "b";
+
+        System.out.println(s1 == s3);//true
+    }
+
+    @Test
+    public void test8() {
+
+        String s1 = "ab";
+
+        final String s2 = getB();//尽管加了final,但等号右边是方法，在运行期才会执行
+        String s3 = "a" + s2;
+
+        System.out.println(s1 == s3); // false
+    }
+
+    public String getB() {
+        return "b";
+    }
+
+    @Test
+    public void test9() {
+        String s1 = "a1";
+        String s2 = "a" + 1;//1是字面量，同样能优化
+        System.out.println(s1 == s2); // true
+    }
+
+    @Test
+    public void test10() {
+        String s1 = new String("abc");
+        System.out.println(s1);
+
+        StringBuilder s2 = new StringBuilder("abc");
+        System.out.println(s2);
+
+        // String的equals方法中，类型不一样，没有比较的意义。
+        // s2是StringBuilder类型，类型不一样，结果一定是false。
+        System.out.println(s1.equals(s2)); // false
+    }
+}
+```
 
 
-### StringBuilder
+
+### StringBuilder和StringBuffer
 
 当我们在拼接字符串和反转字符串的时候会使用到
 
@@ -2750,286 +3129,682 @@ public class StringBuilderDemo4 {
 
 ![903ba64f5e61056d77bc219e46f2af2](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631570.png)
 
-## 3. Math
+## Math
 
-* 基本介绍
-
-  Math 类包含用于执行基本数学运算的方法，如初等指数、对数、平方根和三角函数等
-
-## 4. Date
-
-## 5. System 类
-
-## 6. Arrays
+java.lang.Math 数学工具类，都是静态方法
 
 ```java
 /**
- * 测试数组工具类java.util.Arrays
+ * java.lang.Math 数学类。
+ * 常用属性：static final double PI（圆周率）
+ * 常用方法：
+ * static int abs(int a);			绝对值
+ * static double ceil(double a);	向上取整
+ * static double floor(double a);	向下取整
+ * static int max(int a, int b);	最大值
+ * static int min(int a, int b);	最小值
+ * static double random();		随机数[0.0, 1.0)     
+   int num = (int)(Math.random() * 100);可以获取[0-100)的随机数
+ * static long round(double a);		四舍五入
+ * static double sqrt(double a);	平方根
+ * static double pow(double a, double b);   a的b次幂
  */
-public class ArraysTest {
-    
-     /**
-     * public static String toString(数组) : 将数组对象转换成字符串形式。
-     */
-    @Test
-    public void testToString(){
-        int[] arr = {1,2,3,34,54};
-        System.out.println(arr); // [I@49e202ad
-        System.out.println(Arrays.toString(arr)); // [1, 2, 3, 34, 54]
+public class MathTest {
+    public static void main(String[] args) {
+        // 圆周率
+        System.out.println("圆周率：" + Math.PI);//圆周率：3.141592653589793
 
-        String[] names = {"zhangsan", "lisi", "wangwu"};
-        System.out.println(names); // [Ljava.lang.String;@641147d0
-        System.out.println(Arrays.toString(names)); //[zhangsan, lisi, wangwu]
+        // 绝对值
+        int a = 100;
+        int b = 396;
+        System.out.println("相差：" + Math.abs(a - b));//相差：296
+
+        // 向上取整
+        System.out.println(Math.ceil(1.3));//2.0
+
+        // 向下取整
+        System.out.println(Math.floor(1.9999));//1.0
+
+        // 取大值
+        System.out.println(Math.max(10, 20));//20
+
+        // 取小值
+        System.out.println(Math.min(10, 20));//10
+
+        // 四舍五入
+        System.out.println(Math.round(3.4));//3
+        System.out.println(Math.round(3.5));//4
+
+        // 平方根
+        System.out.println(Math.sqrt(9));//3.0
+        System.out.println(Math.sqrt(10));//3.1622776601683795
+
+        // a的b次幂
+        System.out.println(Math.pow(2, 3));//8.0
         
-        Person p1 = new Person(20);
-        Person p2 = new Person(22);
-        Person p3 = new Person(19);
-        Person p4 = new Person(18);
-        Person[] persons = {p1, p2, p3, p4};
-        System.out.println(persons);//[Lcom.powernode.javase.Person;@71248c21
-        System.out.println(Arrays.toString(persons)); 
-        //自定义Person中，需要重写toString方法，才能输出如下：
-        //[Person{age=20}, Person{age=22}, Person{age=19}, Person{age=18}]
-    }
-    
-    /**
-     * public static String deepToString(Object[] a)作用是：适合于将多维数组转换成字符串。
-     */
-    @Test
-    public void testDeepToString(){
-        int[][] arr = {
-                {1},
-                {2,3},
-                {4,5,6}
-        };
-        System.out.println(Arrays.toString(arr)); // [[I@49e202ad, [I@1c72da34, [I@6b0c2d26]
-        System.out.println(Arrays.deepToString(arr)); // [[1], [2, 3], [4, 5, 6]]
-    }
-
-    
-     /**
-     * public static int[] copyOf(int[] 原数组, int 新数组长度)
-     * 新数组长度<原数组长度：部分拷贝
-     * 新数组长度=原数组长度：完全拷贝
-     * 新数组长度>原数组长度：全部拷贝，多余位置补默认值
-     *
-     * public static int[] copyOfRange(int[] 原数组, int 起始索引, int 结束索引)
-     */
-    @Test
-    public void testCopyOf(){
-        
-        int[] arr = {1,2,3,4,5,6,7,8,9};
-        int[] newArr = Arrays.copyOf(arr, 3);
-        System.out.println(Arrays.toString(newArr));//[1, 2, 3]
-
-        // 不包含结束索引
-        int[] newArr2 = Arrays.copyOfRange(arr, 2, 4);
-        System.out.println(Arrays.toString(newArr2));//[3, 4]
-    }
-    
-    /**
-     * public static <T> List<T> asList(T... a)：将一组数据转换成List集合
-     */
-    @Test
-    public void testAsList(){
-        List list = Arrays.asList(1, 2, 3, 4, 5);
-        for (int i = 0; i < list.size(); i++) {
-            System.out.print(list.get(i) + " ");//1 2 3 4 5
+        // 随机数[0.0 ~ 1.0)
+        for (int i = 0; i < 10; i++) {
+            System.out.println((int)(Math.random() * 100));
         }
     }
-    
-     /**
-     * 判断两个数组是否相等
-     * public static boolean equals(int[] a, int[] a2)
-     * public static boolean equals(Object[] a, Object[] a2)
-     */
-    @Test
-    public void testEquals(){
-        int[] arr1 = {1,2,3};
-        int[] arr2 = {2,1,3};
-        int[] arr3 = {1,2,3};
-        System.out.println(Arrays.equals(arr1, arr2));//false
-        System.out.println(Arrays.equals(arr1, arr3));//true
-
-        String[] names1 = new String[]{"abc", "def", "xyz"};
-        String[] names2 = new String[]{"abc", "def", "xyz"};
-        System.out.println(Arrays.equals(names1, names2));//true
-    }
-    
-     /**
-     * 填充数组
-     * public static void fill(int[] a, int val)
-     * public static void fill(int[] a, int fromIndex, int toIndex, int val)
-     */
-    @Test
-    public void testFill(){
-        int[] arr = new int[5]; // 5个0
-        Arrays.fill(arr, 10);
-        System.out.println(Arrays.toString(arr));//[10, 10, 10, 10, 10]
-
-        // 不包含toIndex
-        Arrays.fill(arr, 1, 3, 100);
-        System.out.println(Arrays.toString(arr));//[10, 100, 100, 10, 10]
-    }
-    
-     /**
-     * public static void sort(数组):给数组排序
-     * 基本类型数组：默认升序
-     * 自定义类型数组：自定义类必须实现Comparable接口，并且实现compareTo方法，在这个方法中编写比较规则
-     */
-    @Test
-    public void testSort(){
-        int[] arr = {3,6,7,2,4,1,5,9,8};
-        Arrays.sort(arr);
-        System.out.println(Arrays.toString(arr));//[1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-        String[] strs = {"d", "c", "a", "b"};
-        String[] strs1 = {"a", "ac", "ab", "b"};
-
-        // 应该是根据字典的顺序排序的。
-        Arrays.sort(strs);
-        Arrays.sort(strs1);
-        System.out.println(Arrays.toString(strs));//[a, b, c, d]
-        System.out.println(Arrays.toString(strs1));//[a, ab, ac, b]
-
-        // 能不能对Person数组排序
-        Person p1 = new Person(20);
-        Person p2 = new Person(22);
-        Person p3 = new Person(19);
-        Person p4 = new Person(18);
-/*
-如果自定义Person类没有实现Comparable接口，并且实现compareTo方法则会产生如下异常：java.lang.ClassCastException: class com.powernode.javase.Person cannot be cast to class java.lang.Comparable
-猜测，底层一定有这样一行代码：
-Comparable c = (Comparable) p1; 
-为什么会报这样的错误呢？因为p1和c没有继承关系
-也进一步说明了我们的Person类不是可比较的。
-Comparable字面意思：可比较的。
-*/
-        Person[] persons = {p1, p2, p3, p4};
-
-        Arrays.sort(persons);
-        System.out.println(Arrays.toString(persons));
-        //Person类实现Comparable接口，并且重写compareTo方法和toString方法后，输出如下：
-        //[Person{age=18}, Person{age=19}, Person{age=20}, Person{age=22}]
-    }
-    
-     /**
-     * 启用多核CPU并行排序。
-     * 首先你的电脑是支持多核的。
-     * 注意：数据量太小的话，不要调用这个方法，因为启动多核也是需要耗费资源的。
-     * Java8引入的方法。
-     * 数据量较大的时候，建议使用这个方法效率比较高。
-     * 通过源码分析：如果超过4096个长度，则会启用多核。
-     * 4096以内就自动调用sort方法就行了。
-     */
-    @Test
-    public void testParallelSort(){
-        int[] arr = new int[100000000];
-        Random random = new Random();//生成一个在 0 到 99999999 之间的随机整数
-        for (int i = 0; i < arr.length; i++) {
-            int num = random.nextInt(100000000);
-            arr[i] = num;
-        }
-
-        // 获取系统当前时间的毫秒数（1970-1-1 0:0:0 000到当前系统时间的总毫秒数 1秒=1000毫秒）
-        long begin = System.currentTimeMillis();
-
-        // 排序
-        Arrays.parallelSort(arr);//耗时2766
-        //Arrays.sort(arr);//耗时9919
-        // 获取系统当前时间的毫秒数
-        long end = System.currentTimeMillis();
-
-        // 耗时
-        System.out.println(end - begin);
-    }
-    
-    /**
-     * public static int binarySearch(数组, 查找的元素)：二分查找法查找元素
-     * 细节1：二分查找的前提:数组中的元素必须是升序的
-     * 细节2：如果查找的元素是存在的，则返回真实索引；如果不存在，则返回的是 -插入点-1
-     * 为什么要-1？
-     * 如下述代码，我要查找数字0，此时0不存在，如果返回的是-插入点，即返回-0
-     * 为避免这种情况，Java在这个基础上又减一
-     */
-    @Test
-    public void testBinarySearch(){
-        int[] arr = {1,2,3,4,5,6,7};
-        System.out.println(Arrays.binarySearch(arr, 5));//4
-        System.out.println(Arrays.binarySearch(arr, 0));//-1
-        System.out.println(Arrays.binarySearch(arr, 8));//-8
-    }
-
-
 }
 ```
+
+## Random
+
+java.util.Random 随机数生成器（生成随机数的工具类）
 
 ```java
-public class Person implements Comparable{
-    private int age;
-    private String name;
+/**
+ * 专门生成随机数的一个类：java.util.Random;
+ * 常用构造方法：
+ *          Random()
+ * 常用方法：
+ *          int nextInt(); 获取一个int类型取值范围内[-2147483648 ~ 2147483647]的随机int数
+ *          int nextInt(int bound); 获取[0,bound)区间的随机数
+ *          double nextDouble(); 获取[0.0, 1.0)的随机数。
+ */
+public class RandomTest {
+    public static void main(String[] args) {
 
-    public Person() {
+        // 获取一个随机数生成器对象
+        Random random = new Random();
+
+        for (int i = 0; i < 10; i++) {
+            // 生成[-2147483648 ~ 2147483647]
+            int num = random.nextInt();
+            System.out.println(num);
+        }
+
+        System.out.println("===========================");
+
+        // nextInt(int bound)
+        // nextInt(101) 取[0, 100] 之间的随机数
+        for (int i = 0; i < 10; i++) {
+            int num = random.nextInt(101);
+            System.out.println(num);
+        }
+
+        // nextDouble() [0.0 ~ 1.0)
+        for (int i = 0; i < 10; i++) {
+            double num = random.nextDouble();
+            System.out.println(num);
+        }
     }
+}
+```
 
-    public Person(int age) {
-        this.age = age;
+## System
+
+```java
+java.lang.System 系统类。
+ * 常用属性：
+ * static final PrintStream err 标准错误输出流（System.err.println(“错误信息”);输出红色字体）
+ * static final InputStream in 标准输入流
+ * static final PrintStream out 标准输出流
+    
+ * 常用方法：
+ * static void arraycopy(Object src,int srcPos,Object dest,int destPos,int length); 数组拷贝
+ * static void exit(int status); 退出虚拟机
+ * static void gc(); 建议启动垃圾回收器
+ * static long currentTimeMillis(); 获取自1970-01-01 00:00:00 000到系统当前时间的总毫秒数
+ * static long nanoTime(); 获取自1970年1月1日0时0分0秒以来，当前时间的纳秒数
+ * static Map<String,String> getenv(); 获取当前系统的环境变量，例如Path，JAVA_HOME，CLASSPATH等。
+ * static Properties getProperties(); 获取当前系统的属性。
+ * static String getProperty(String key); 通过key获取指定的系统属性。
+
+```
+
+
+
+## 日期相关API
+
+* **java.util.Date 日期类**
+
+  * 构造方法：Date()
+  * 构造方法：Date(long 毫秒)
+
+  ```java
+  // 注意：我们学习的是java.util.Date.
+  // 不是java.sql.Date（java.sql.Date的父类是java.util.Date）
+  import java.util.Date;
+  
+  /**
+   * java.util.Date 日期API。
+   */
+  public class DateTest01 {
+      public static void main(String[] args) {
+          // Date类的构造方法
+          // Date()
+          // Date(long l)
+  
+          // 获取系统当前时间
+          Date date = new Date();
+          System.out.println(date);//Fri Jul 12 15:25:23 CST 2024
+          //CST表示东八区时区，与UTC全球标准时间差8小时
+  
+          // 获取指定的时间（参数的单位是毫秒数）
+          Date date1 = new Date(1000);
+          System.out.println(date1);//Thu Jan 01 08:00:01 CST 1970
+  
+          // 获取当前系统时间的前10分钟时间
+          Date date2 = new Date(System.currentTimeMillis());
+          //long l = System.currentTimeMillis();
+          //获取自1970年1月1日0时0分0秒到系统当前时间的总毫秒数。
+          System.out.println(date2);//Fri Jul 12 15:25:23 CST 2024
+  
+          Date date3 = new Date(System.currentTimeMillis() - 1000 * 60 * 10);
+          System.out.println(date3);//Fri Jul 12 15:15:23 CST 2024
+      }
+  }
+  ```
+
+
+
+* **java.util.SimpleDateFormat 日期格式化类**
+
+  ```java
+  import java.text.ParseException;
+  import java.text.SimpleDateFormat;
+  import java.util.Date;
+  
+  /**
+   * 日期格式化，需要借助：
+   *      java.text.DateFormat
+   *      java.text.SimpleDateFormat（用这个。DateFormat是SimpleDateFormat的父类。）
+   */
+  public class DateTest02 {
+      public static void main(String[] args) throws ParseException {
+  
+          // java.util.Date ---> java.lang.String
+          // 获取系统当前时间
+          Date now = new Date();
+  
+          // 格式化
+          //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS");
+          //SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+          //SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yy");
+          SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+  
+          // 调用format方法完成格式化
+          String str = sdf.format(now);
+  
+          System.out.println(str);//15:33:57
+  
+  
+          // java.lang.String ---> java.util.Date
+          // 日期字符串
+          String strDate = "2008-08-08 08:08:08 888";
+  
+          // 创建日期格式化对象
+          SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss SSS");
+  
+          // 解析：将字符串String转换成Date
+          Date date = sdf2.parse(strDate);
+  
+          System.out.println(date);//Fri Aug 08 08:08:08 CST 2008
+  
+      }
+  }
+  ```
+
+
+
+* **java.util.Calendar 日历类**
+
+  * 获取当前时间的日历对象：Calendar c = Calendar.getInstance();
+  * 获取日历中的某部分：int year = c.get(Calendar.YEAR);
+
+  ```java
+  import java.util.Calendar;
+  
+  public class CalendarTest01 {
+      public static void main(String[] args) {
+  
+          // 获取当前时间的日历对象（调用一个静态方法）
+          Calendar calendar = Calendar.getInstance();
+          System.out.println(calendar);
+  
+          // 获取日历中的年
+          int year = calendar.get(Calendar.YEAR);
+          System.out.println(year);
+  
+          // 获取日历中的月
+          int month = calendar.get(Calendar.MONTH);
+          System.out.println(month); // 0-11 表示一年中的12个月。
+  
+          // 获取日历中的日
+          int day = calendar.get(Calendar.DAY_OF_MONTH);
+          System.out.println(day);
+  
+          /*
+              Calendar.YEAR 获取年份
+              Calendar.MONTH 获取月份，0表示1月，1表示2月，...，11表示12月
+  
+              Calendar.DAY_OF_MONTH 获取本月的第几天
+              Calendar.DAY_OF_YEAR 获取本年的第几天
+              Calendar.DAY_OF_WEEK 获取星期几，1表示星期日，...，7表示星期六
+  
+              Calendar.HOUR_OF_DAY 小时，24小时制
+              Calendar.HOUR 小时，12小时制
+  
+              Calendar.MINUTE 获取分钟
+              Calendar.SECOND 获取秒
+              Calendar.MILLISECOND 获取毫秒
+  
+           */
+      }
+  }
+  ```
+
+  * 日历的set方法：设置日历
+
+    * calendar.set(Calendar.YEAR, 2023);  
+
+    * calendar.set(2008, Calendar.SEPTEMBER,8);
+
+  * 日历的add方法（日历中各个部分的加减）
+
+    * calendar.add(Calendar.YEAR, 1);
+
+  * 日历对象的setTime()让日历关联具体的时间
+
+    * calendar.setTime(new Date());
+
+  * 日历对象的getTime()方法获取日历的具体时间：
+
+    * Date time = calendar.getTime();
+
+  ```java
+  public class CalendarTest02 {
+      public static void main(String[] args) throws ParseException {
+          // 获取系统当前时间的日历
+          Calendar cal = Calendar.getInstance();
+          // 设置该日历的年是2008年
+          cal.set(Calendar.YEAR, 2008);
+          //cal.set(Calendar.MONTH, 10);
+          // 获取日历的年月日信息
+          System.out.println(cal.get(Calendar.YEAR) + "年" + (cal.get(Calendar.MONTH) + 1) + "月" + cal.get(Calendar.DAY_OF_MONTH) + "日");
+          // 设置日历是2008年8月8日 8时8分8秒的日历
+          cal.set(2008, Calendar.AUGUST,8,8,8,8);
+          // 获取日历的年月日信息
+          System.out.println(cal.get(Calendar.YEAR) + "年" + (cal.get(Calendar.MONTH) + 1) + "月" + cal.get(Calendar.DAY_OF_MONTH) + "日");
+  
+          // 年加1
+          //cal.add(Calendar.YEAR, 2);
+          cal.add(Calendar.YEAR, -2);
+          // 获取日历的年月日信息
+          System.out.println(cal.get(Calendar.YEAR) + "年" + (cal.get(Calendar.MONTH) + 1) + "月" + cal.get(Calendar.DAY_OF_MONTH) + "日");
+  
+          // 获取一个2008年5月12日 15:30:30的Date
+          String strDate = "2008-05-12 15:30:30";
+          SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+          Date date = sdf.parse(strDate);
+          cal.setTime(date);
+          // 获取这个日历的小时和分
+          System.out.println(cal.get(Calendar.HOUR_OF_DAY));
+          System.out.println(cal.get(Calendar.MINUTE));
+  
+          // 获取日历代表的日期
+          cal.set(Calendar.SECOND, 56); // 修改日历中的秒
+          Date time = cal.getTime();
+          String s = sdf.format(time);
+          System.out.println(s);
+  
+      }
+  }
+  ```
+
+  
+
+## Java8的新日期API
+
+传统的日期API存在线程安全问题，Java8又提供了一套全新的日期API
+
+java.time.LocalDate 日期、java.time.LocalTime 时间、java.time.LocalDateTime 日期时间 
+
+java.time.Instant 时间戳信息
+
+java.time.Duration 计算两个时间对象之间的时间间隔，精度为纳秒
+
+java.time.Period 计算两个日期之间的时间间隔，以年、月、日为单位
+
+java.time.temporal.TemporalAdjusters 提供了一些方法用于方便的进行日期时间调整
+
+java.time.format.DateTimeFormatter 用于进行日期时间格式化和解析
+
+
+
+### 1. LocalDate日期、LocalTime时间、LocalDateTime日期时间
+
+* 获取当前时间（精确到纳秒，1秒=1000毫秒，1毫秒=1000微秒，1微秒=1000纳秒）
+
+  ```java
+  LocalDateTime now = LocalDateTime.now();
+  ```
+
+* 获取指定日期时间
+
+  ```java
+  LocalDateTime ldt = LocalDateTime.of(2008,8,8,8,8,8,8); // 获取指定的日期时间
+  ```
+
+* 加日期和加时间
+
+  ```java
+  LocalDateTime localDateTime = ldt.plusYears(1).plusMonths(1).plusDays(1).plusHours(1).plusMinutes(1).plusSeconds(1).plusNanos(1);
+  ```
+
+* 减日期和减时间 
+
+  ```java
+  LocalDateTime localDateTime = ldt.minusYears(1).minusMonths(1).minusDays(1).minusHours(1).minusMinutes(1).minusSeconds(1).minusNanos(1);
+  ```
+
+* 获取年月日时分秒
+
+  ```java
+  int year = now.getYear(); // 年			
+  int month = now.getMonth().getValue(); // 月
+  int dayOfMonth = now.getDayOfMonth(); // 一个月的第几天	
+  int dayOfWeek = now.getDayOfWeek().getValue(); // 一个周第几天
+  int dayOfYear = now.getDayOfYear(); // 一年的第几天	
+  int hour = now.getHour(); // 时
+  int minute = now.getMinute(); // 分			
+  int second = now.getSecond(); // 秒
+  int nano = now.getNano(); // 纳秒
+  ```
+
+### 2. Instant 时间戳
+
+```java
+/**
+ * 获取时间戳：自1970-1-1 0时0分0秒到当前系统时间的总毫秒数。
+ */
+public class DateTest {
+    public static void main(String[] args) {
+        
+        Instant now = Instant.now(); // 系统当前时间，基于UTC（全球标准时间）
+        System.out.println(now);//2024-07-12T08:13:25.513824300Z
+
+        long epochMilli = now.toEpochMilli();
+        System.out.println("时间戳：" + epochMilli);//时间戳：1720772005513
     }
+}
+```
 
-    public int getAge() {
-        return age;
-    }
+### 3. Duration 计算时间间隔
 
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    @Override
-    public String toString() {
-        return "Person{" +
-                "age=" + age +
-                '}';
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        // 编写比较规则。
-        // 根据年龄进行比较
-        // p1.compareTo(p2) p1和p2之间进行比较。
-        // this是p1
-        // o是p2
-        // 当前对象的年龄
-        //this.age;
-
-        // 另一个对象的年龄
-        Person person = (Person) o;
-        //person.age;
-
-        // 按照年龄进行比较。
-        return this.age - person.age;//按年龄升序
-        //return person.age - this.age;//按年龄降序
-
-        // 按照字符串进行比较。
-        //String类已经实现Comparable接口以及实现compareTo方法
-        // 升序
-        //return this.name.compareTo(person.name);
-        // 降序
-        //return person.name.compareTo(this.name);
+```java
+public class DateTest {
+    public static void main(String[] args) {
+        // 获取时间1
+        LocalDateTime time1 = LocalDateTime.of(2008, 7, 8, 8, 8, 8);
+        // 获取时间2
+        LocalDateTime time2 = LocalDateTime.of(2008, 8, 8, 8, 8, 8);
+        // 获取两个时间的差
+        Duration between = Duration.between(time1, time2);
+        // 看看差多少天
+        System.out.println("相差天数：" + between.toDays());//相差天数：31
+        // 看看差多少个小时
+        System.out.println("相差小时：" + between.toHours());//相差小时：744
     }
 }
 ```
 
 
 
-## 9. BigInterger 和 BigDecimal 类
+### 4. Period 计算日期间隔
 
-应用场景
+```java
+public class DateTest {
+    public static void main(String[] args) {
 
-BigInterger 适合保存比较大的整数
+        LocalDate date1 = LocalDate.of(2007,7,15);
+        LocalDate date2 = LocalDate.of(2008,8,8);
+        
+        // 计算两个日期差
+        Period between = Period.between(date1, date2);
+        // 相差的年
+        System.out.println(between.getYears());//1
+        // 相差的月
+        System.out.println(between.getMonths());//0
+        // 相差的日
+        System.out.println(between.getDays());//24
+    }
+}
+```
 
-BigDecimal 适合保存精读更高的浮点数（小数）
+### 5. TemporalAdjusters  时间矫正器
 
-## 10. Lambda表达式
+```java
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
+
+/**
+ * LocalDateTime now = LocalDateTime.now(); // 获取系统当前时间
+ * now.with(TemporalAdjusters.firstDayOfMonth()); // 当前月的第一天
+ * now.with(TemporalAdjusters.firstDayOfNextYear()); // 下一年的第一天
+ * now.with(TemporalAdjusters.lastDayOfYear()); // 本年最后一天
+ * now.with(TemporalAdjusters.lastDayOfMonth()); // 本月最后一天
+ * now.with(TemporalAdjusters.next(DayOfWeek.MONDAY)); // 下周一
+ * ......
+ */
+public class DateTest {
+    public static void main(String[] args) {
+        // 获取系统当前时间
+        LocalDateTime now = LocalDateTime.now();
+        // 矫正时间
+        LocalDateTime localDateTime1 = now.with(TemporalAdjusters.lastDayOfYear());
+        System.out.println(localDateTime1);
+    }
+}
+```
+
+
+
+### 6. DateTimeFormatter 日期格式化
+
+```java
+public class DateTest {
+    public static void main(String[] args) {
+
+        // LocalDateTime -> String
+        // 获取一个日期时间
+        LocalDateTime now = LocalDateTime.now();
+        // 创建格式化对象
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 格式化
+        String s = dateTimeFormatter.format(now);
+        System.out.println(s);
+
+        // String -> LocalDateTime
+        LocalDateTime localDateTime = LocalDateTime.parse("2008-08-08 08:08:08", dateTimeFormatter);
+        System.out.println(localDateTime);
+    }
+}
+```
+
+
+
+## 大数字
+
+### BigInterger  
+
+如果整数超过long的最大值怎么办？
+
+* java中提供了一种引用数据类型来解决这个问题：java.math.BigInteger。它的父类是Number
+
+* 常用构造方法：BigInteger(String val)
+
+* 常用方法：
+
+  * BigInteger add(BigInteger val)：求和
+  * BigInteger subtract(BigInteger val)： 相减
+  * BigInteger multiply(BigInteger val)：乘积
+  * BigInteger divide(BigInteger val)：商
+  * int compareTo(BigInteger val)：比较
+  * BigInteger abs()：绝对值
+  * BigInteger max(BigInteger val)：最大值
+  * BigInteger min(BigInteger val)：最小值
+  * BigInteger pow(int exponent)：次幂
+  * BigInteger sqrt()：平方根
+
+  ```java
+  public class BigNumTest01 {
+      public static void main(String[] args) {
+  
+          // 编译报错，超范围。
+          //long num = 99999999999999999999999L;
+  
+          // 创建一个大整数
+          BigInteger num1 = new BigInteger("-99999999999999999999999");
+          System.out.println(num1);//-99999999999999999999999
+  
+          BigInteger num2 = new BigInteger("1");
+  
+          // 加法
+          BigInteger result1 = num1.add(num2);
+          System.out.println(result1);//-99999999999999999999998
+  
+          // 减法
+          BigInteger result2 = num1.subtract(num2);
+          System.out.println(result2);//-100000000000000000000000
+  
+          // 乘法
+          BigInteger result3 = num1.multiply(num2);
+          System.out.println(result3);//-99999999999999999999999
+  
+          // 除法
+          BigInteger result4 = num1.divide(num2);
+          System.out.println(result4);//-99999999999999999999999
+  
+          // 绝对值
+          BigInteger result5 = num1.abs();
+          System.out.println(result5);//99999999999999999999999
+  
+          // 次幂
+          BigInteger bigInteger = new BigInteger("2");
+          BigInteger pow = bigInteger.pow(3);
+          System.out.println(pow);//8
+          
+          //平方根
+          BigInteger bigInteger1 = new BigInteger("9");
+          BigInteger sqrt = bigInteger1.sqrt();
+          System.out.println(sqrt);//3
+  
+      }
+  }
+  ```
+
+  
+
+### BigDecimal
+
+如果浮点型数据超过double的最大值怎么办？
+
+* java中提供了一种引用数据类型来解决这个问题：java.math.BigDecimal（经常用在财务软件中）。它的父类是Number
+
+* 构造方法：BigDecimal(String val)
+
+* 常用方法：
+
+  * BigDecimal add(BigDecimal augend);		求和
+  * BigDecimal subtract(BigDecimal subtrahend);	相减
+  * BigDecimal multiply(BigDecimal multiplicand);	乘积
+  * BigDecimal divide(BigDecimal divisor);		商
+  * BigDecimal max(BigDecimal val);		最大值
+  * BigDecimal min(BigDecimal val);		最小值
+  * BigDecimal movePointLeft(int n);		向左移动小数点
+  * BigDecimal movePointRight(int n);		向右移动小数点
+
+  ```java
+  public class BigNumTest02 {
+      public static void main(String[] args) {
+          BigDecimal num1 = new BigDecimal("10");
+          BigDecimal num2 = new BigDecimal("2");
+  
+          System.out.println(num1.add(num2));//12
+          System.out.println(num1.subtract(num2));//8
+          System.out.println(num1.multiply(num2));//20
+          System.out.println(num1.divide(num2));//5
+          System.out.println(num1.max(num2));//10
+          System.out.println(num1.min(num2));//2
+  
+          BigDecimal num3 = new BigDecimal("123456789.123456789");
+          System.out.println(num3.movePointLeft(3));//123456.789123456789
+          System.out.println(num3.movePointRight(3));//123456789123.456789
+      }
+  }
+  ```
+
+### 数字格式化
+
+* 有时我们需要将数字以某种格式展示，java.text.DecimalFormat 类是专门用来对数字进行格式化的
+* 常用数字格式：
+  * ###,###.##   （三个数字为一组，组和组之间使用逗号隔开，保留两位小数）
+  * ###,###.0000  （三个数字为一组，组和组之间使用逗号隔开，保留4位小数，不够补0）
+
+* 构造方法：DecimalFormat(String pattern)；
+* 常用方法：String format(数字)；
+
+```java
+public class DecimalFormatTest {
+    public static void main(String[] args) {
+
+        // 创建一个数字格式化对象
+        DecimalFormat df = new DecimalFormat("###,###.##");
+
+        // 格式化
+        String s = df.format(12345678.123);
+
+        System.out.println(s); // "12,345,678.12"
+
+        // 保留四位小数，要求不够补0
+        DecimalFormat df2 = new DecimalFormat("###,###.0000");
+        String s2 = df2.format(12345678.123);
+        System.out.println(s2); // "12,345,678.1230"
+    }
+}
+```
+
+## UUID
+
+UUID（通用唯一标识符）是一种软件构建的标准，用来生成具有唯一性的ID。
+
+UUID具有以下特点：
+
+* UUID可以在分布式系统中生成唯一的标识符，避免因为主键冲突等问题带来的麻烦。
+* UUID具有足够的唯一性，重复的概率相当低。UUID使用的是128位数字，除了传统的16进制表示之外（32位的16进制表示），还有基于62进制的表示，可以更加简洁紧凑。
+* UUID生成时不需要依赖任何中央控制器或数据库服务器，可以在本地方便、快速地生成唯一标识符。
+* UUID生成后可以被许多编程语言支持并方便地转化为字符串表示形式，适用于多种应用场景。在Java开发中，UUID的使用是非常普遍的。它可以用于生成数据表主键、场景标识、链路追踪、缓存Key等。使用UUID可以方便地避免主键、缓存Key等因冲突而产生的问题，同时能够实现多种功能，例如追踪、缓存、日志记录等。
+
+```java
+/**
+ * Java中的java.util.UUID类提供对UUID的支持
+ * 生成UUID：static UUID randomUUID();
+ * 将UUID转换为字符串：String toString();
+ */public class UUIDTest {
+    public static void main(String[] args) {
+
+        // 获取UUID对象
+        UUID uuid = UUID.randomUUID();
+
+        String s = uuid.toString();
+
+        System.out.println(s);//306356c5-a816-42da-ae4d-a10772fe7008
+
+        String s1 = s.replaceAll("-", "").toUpperCase();
+
+        System.out.println(s1);//306356C5A81642DAAE4DA10772FE7008
+    }
+}
+```
+
+
+
+## Lambda表达式
 
 ![ec6533fbfcc663b195b7c886fc40f44](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031632131.png)
 
