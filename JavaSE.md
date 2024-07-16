@@ -12,40 +12,135 @@
 
 ## Java运行机制
 
+![e15b7502c68b7f1d8a6fb514bea52a2](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031625623.png)
+
 ![image-20240716153738350](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407161537728.png)
 
 * 包含两个阶段：编译阶段和运行阶段。
+
 * 编译阶段和运行阶段可以在不同的操作系统上完成。
+
 * 编译后删除java源程序，不会影响程序的执行。
+
 * 生成的class文件如果是A.class，则类名为A。如果是Hello.class，则类名为Hello。
+
 * javac是负责编译的命令。java是负责运行的命令。
+
 * class文件不是机器码，操作系统无法直接执行。只有JVM才能看懂。
+
 * JVM会把class字节码解释为机器码，这样操作系统才能看懂。
+
 * JDK、JRE、JVM分别是什么？他们的关系是什么？
 
-![e15b7502c68b7f1d8a6fb514bea52a2](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031625623.png)
+  ```
+  JDK（Java Development Kit）：JDK 是 Java 开发⼯具包，包含了编写、编译、调试和运⾏ Java 程序所需的所有⼯具和组件，⽐如编译器（javac）、Java API、调试⼯具等。JDK 是针对 Java 开发⼈员的，它包含了JRE，还有编译器和其他⼯具，可以⽤来编写和调试 Java 程序。
+  
+  JRE（Java Runtime Environment）：JRE 是 Java 运⾏时环境，包括了 Java 虚拟机（JVM）和 Java 标准类
+  库（Java API）。JRE 是针对 Java 应⽤程序的，它提供了在计算机上运⾏ Java 应⽤程序所需的最⼩环境。
+  
+  JVM（Java Virtual Machine）：JVM 是 Java 虚拟机，是 Java 程序运⾏的环境。JVM 负责将 Java 代码解释或编译为本地机器代码，并在运⾏时提供必要的环境⽀持，⽐如内存管理、垃圾回收、安全性等。JVM 的主要作⽤是将 Java 代码转换为可以在计算机上运⾏的机器码，并负责程序的执⾏。
+  
+  综上所述，JDK、JRE 和 JVM 之间的区别可以总结如下：
+  JDK = JRE + Java开发工具
+  JRE = JVM + Java核心类库
+  ```
+
+
+
+## 环境变量CLASSPATH
+
+- classpath环境变量是隶属于Java语言的。不是windows操作系统的。和PATH环境变量完全不同。
+
+- classpath环境变量是给classloader（类加载器）指路的。
+
+- java A。执行后。先启动 JVM，JVM启动classloader，classloader去硬盘上通过classpath找A.class文件。找到则执行，找不到则报错。
+
+- 如果classpath没有配置的话，默认从当前路径下找class字节码文件。
+
+- 如果classpath配置了，例如配置到桌面上了：‪C:\Users\HP\OneDrive\Desktop，那么classloader以后就只会去桌面上找字节码文件了，不再从当前路径下找了。![00454c993fec516a9f7c424b56b140c](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407161734372.png)
+
+  
+
+- 注意，如果classpath配置为：classpath=.;‪C:\Users\HP\OneDrive\Desktop 是什么意思呢？
+
+  - 先让类加载器从当前路径下找，如果找不到的话，去‪C:\Users\HP\OneDrive\Desktop找。
+
+  
+
+## Public class 与 class 的区别
 
 ```java
-
-//public static void main(String[]arg)是固定的书写格式 表示一个主方法，即程序的入口
-//java语言严格区分大小写
-//一个源文件中最多只能有一个public类。其他类的个数不限。编译后，每一个类都对应一个.class文件
-//如果源文件包含一个public类，则文件名必须按该类名命名！！！
-
+/**
+* java语言严格区分大小写
+* 一个源文件中最多只能有一个public类。其他类的个数不限。编译后，每一个类都对应一个.class文件
+* public的类可以没有，有的话，只能有一个，并且public的类名要和源文件名保持一致
+* 任何一个class中都可以有main方法，但对于一个软件来说，一般入口只有一个
+* public static void main(String[]arg)是固定的书写格式 表示一个主方法，即程序的入口
+*/
 public class Hello{
-
 	public static void main(String[]arg){
 		System.out.println("hello,world~");
 	}
-
 }
 ```
 
-## 2.Java 转义字符
 
-## 3.
 
-# 变量
+# Java基础语法
+
+## 标识符
+
+### 什么是标识符？
+
+在Java中，标识符是用来给变量、方法、类和包等命名的字符序列
+
+标识符的长度没有限制，但是建议使用有意义的、简洁的标识符，以提高代码的可读性和可维护性
+
+### 标识符可以标识什么？
+
+1. 变量名
+2. 方法名
+3. 类名、接口名、枚举名、注解名
+4. 包名
+5. 常量名
+6. ......
+
+### 标识符命名规则
+
+1. 标识符可以由**字母**、**数字**、下划线(**_**)和美元符号(**$**)组成，不能含有其他符号。（java支持全球所有语言，所以这里的 字母 指的是任何一个国家的文字都可以）
+2. 标识符**不能以数字开头**。
+3. 标识符不能是Java中的关键字，如public、class、void等。
+4. 标识符是区分大小写的，即Foo和foo是两个不同的标识符。
+5. 标识符的长度没有限制，但是Java建议使用有意义的、简短的标识符
+
+### 标识符命名规范
+
+1. 见名知意
+2. 驼峰式命名方式
+3. 类名、接口名、枚举、注解：首字母大写，后面每个单词首字母大写。（StudentService，UserService）
+4. 变量名和方法名：首字母小写，后面每个单词首字母大写。（doSome，doOther）
+5. 常量名：全部大写，每个单词用下划线连接。（LOGIN_SUCCESS，SYSTEM_ERROR）
+6. 包名：全部小写
+
+## 关键字
+
+* Java关键字是Java编程语言中预定义的具有特殊含义的单词，这些单词不能被用作标识符，而是在语法中有特定的用法和限制。
+* Java关键字都是小写的
+* 48个关键字+2个保留字（Java中还没用到但也不让我们用）：
+  * abstract, assert, boolean, break, byte, case, catch, char, class, continue, default, do, double, else, enum, extends, final, finally, float, for, if, implements, import, instanceof, int, interface, long, native, new, package, private, protected, public, return, short, static, strictfp, super, switch, synchronized, this, throw, throws, transient, try, void, volatile, while
+  * 保留字：goto，const
+
+## 字面量
+
+* 字面量指的是在程序中直接使用的数据，字面量是Java中最基本的表达式，不需要进行计算或转换，直接使用即可。
+* Java中有哪些字面量？
+  * 整数型：10、-5、0、100
+  * 浮点型：3.14、-0.5、1.0
+  * 布尔型：true、false
+  * 字符型：'a'、'b'、'c'、'1'、'2'、'国'
+  * 字符串型："Hello"、"World"、"Java"、"你好呀"
+
+## 变量
 
 ![b6c6f2fbd81fc26aa033531ff97e1a2](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031625268.png)
 
@@ -71,7 +166,7 @@ char c4 = 97	//字符类型可以直接存放一个数字，当输出c4时，会
 
 
 
-# 运算符
+## 运算符
 
 ## 1.算术运算符
 
