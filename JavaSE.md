@@ -480,9 +480,9 @@ if(gender){
 
 * 多种类型混合运算，各自先转换成容量最大的类型，再做运算
 
-### 运算符
+## 运算符
 
-#### 接收用户键盘输入
+### 接收用户键盘输入
 
 ```java
 public class KeyInput{
@@ -527,7 +527,7 @@ public class KeyInput{
 
 
 
-#### 算术运算符
+### 算术运算符
 
 ```
 + ： 求和，字符串拼接，正数
@@ -672,12 +672,12 @@ i = ++i;
 System.out.println(i);//11
 ```
 
-#### 关系运算符
+### 关系运算符
 
 * 关系运算符又叫做比较运算符。包括：>、 >=、 <、 <=、 ==、 !=
 * 所有关系运算符的运算结果都是布尔类型，不是true，就是false。
 
-#### 逻辑运算符
+### 逻辑运算符
 
 * 逻辑运算符：&（逻辑与）、 |（逻辑或）、 !（逻辑非）、^（逻辑异或）、 &&（短路与）、 ||（短路或）
 * 逻辑运算符特点：逻辑运算符两边的操作数要求必须是布尔类型，并且最终运算结果也一定是布尔类型。
@@ -689,7 +689,7 @@ System.out.println(i);//11
 * 短路或||：和逻辑或|的运算结果相同。只是存在一种短路现象。（左边操作数为true时，右边操作数不执行）
 * 虽然短路与&&效率高于逻辑与&，但逻辑与&也有用武之地，具体看需求是怎样的。
 
-#### 按位运算符
+### 按位运算符
 
 * 按位运算符用于在二进制位级别上处理整数数据。主要包括：
 
@@ -935,7 +935,7 @@ public class OperatorTest07{
 
   int result = value & (~flag);// 使用这种方式运算进行位清除
 
-#### 赋值运算符
+### 赋值运算符
 
 **基本赋值运算符**
 
@@ -964,7 +964,7 @@ public class OperatorTest07{
     m += 20; // 底层实际上对应的是：m = (byte)(m + 20);
     ```
 
-#### 条件运算符
+### 条件运算符
 
 * Java 语言中的条件运算符由 ? 和 : 组成，也被称为三元运算符。它的语法格式为：
 
@@ -986,13 +986,13 @@ public class OperatorTest07{
 
   
 
-### 程序控制语句
+## 程序控制语句
 
 控制语句：用于控制程序的执行流程，改变程序执行的次序
 
-#### 分支语句
+### 分支语句
 
-##### if语句
+#### if语句
 
 * if语句的四种写法
 
@@ -1057,33 +1057,27 @@ public class OperatorTest07{
 
 
 
-### 
+####  switch语句
 
-
-
-
-
-### 
-
-### 
-
-### 2.5 switch分支
+* switch语句语法格式：
 
 ```java
 switch(表达式){
         
-    case 常量1:
+    case value 1:
         语句块1;
         break;
-    case 常量2:
+        
+    case value 2:
         语句块2;
         break;
     
   	    ...
         
-    case 常量n:
+    case value n:
         语句块n;
         break;
+        
     default:
         default语句块;
         break;             
@@ -1091,56 +1085,106 @@ switch(表达式){
 }
 ```
 
-* 表达式返回一个值，这个值按顺序与常量匹配，匹配成功就执行相应语句，如果一个都没匹配上，则执行 default 语句块
-* break 表示退出 switch
+* switch语句使用注意事项：
 
-## 3.循环控制
+  * switch 语句适用于判断固定值。if语句适用于判断范围或区间时使用。switch能做的if肯定能做，if能完成的switch不一定能完成。 
 
-### 3.1 for循环
+  * 表达式返回一个值，这个值按顺序与case 语句中的值匹配，匹配成功就执行相应语句，如果一个都没匹配上，则执行 default 语句块
+
+  * 表达式最后执行完是一个值，这个值要求类型是：int，枚举类型，字符串类型。当然，也可以直接把byte short char放进去，会进行自动类型转换成int类型。
+
+  * break;语句只要执行，switch语句就会结束。
+
+  * case 语句中的值必须是字面量，不能是变量。
+
+  * case 语句中的值必须和switch后面的值是同一类型，或者能够相互转换。 
+
+  * case可以合并。
+
+    ```java
+    switch(month){
+    		case 3: case 4: case 5:
+    			System.out.println("春季!");
+            	break;
+            case 6: case 7: case 8:
+                System.out.println("夏季!");
+            	break;
+            ...
+    ```
+
+  * 在每个 case 分支中要加上 break 语句，以避免case穿透现象。 
+
+    ```java
+    switch(month){
+                case 3: case 4: case 5:
+                    System.out.println("春季!");
+            
+                case 6: case 7: case 8:
+                    System.out.println("夏季!");
+            
+                case 9: case 10: case 11:
+                    System.out.println("秋季!");
+                    break;
+            
+                case 12: case 1: case 2:
+                    System.out.println("冬季!");
+                    break;
+            
+                default:
+                    System.out.println("您输入的月份不存在！");
+            }
+    //当month = 3时,会打印输出：春季！ 夏季！ 秋季！ 然后遇到break才结束，发生case穿透现象
+    ```
+
+  * 在 switch 语句中，一般都应该有一个 default 分支，用于处理一些特殊情况，以避免程序出错。  （当然，default语句不写，也不会编译报错。）
+
+  * switch 语句中的 default 分支可以放在 switch 块的任意位置，但是通常建议将 default 分支放在所有 case 分支的最后面。（可读性好）
+
+### 循环语句
+
+#### for循环
 
 ```java
-for(循环变量初始化;循环条件;循环变量迭代){
-    
-    循环操作语句;
-        
+for(循环变量初始化;循环条件;循环变量迭代){  
+    循环操作语句;  
 }
 ```
 
 * 循环条件是返回一个布尔值的表达式
 * 括号内的初始化和变量迭代可以写到其他地方，但是两边的分号不能省略
 * 可以有多条初始化语句，但要求类型一样，并且中间由逗号隔开；也可以有多条变量迭代语句，中间也用逗号隔开
+* ![image-20240718104615370](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407181046689.png)
 
-### 3.2 while循环
+#### while循环
 
 ```java
 循环变量初始化;
-while(循环条件){
-
+while(布尔表达式){
     循环体;
-    循环变量迭代;
-    
+    循环变量迭代;   
 }
 ```
 
 * 先判断，再执行
+* 执行原理：只要布尔表达式为true就会一直循环，直到布尔表达式结果为false，循环结束
+* for循环适用于循环次数固定的。while循环适用于循环次数不固定的
 
-### 3.2 do...while循环
+#### do...while循环
 
 ```java
 循环变量初始化;
-do{
-    
+do{   
     循环体语句;
-    循环变量迭代;
-    
+    循环变量迭代;    
 }while(循环条件);
 ```
 
 * 先执行，再判断。至少执行一次
+* 执行原理：先执行一次循环体，再判断布尔表达式，为true继续循环，直到布尔表达式结果为false，循环结束。
 
-### 3.3 多重循环
+### 跳转语句  
 
-### 3.4 跳转控制语句  break
+#### break
 
 ```java
 {
@@ -1150,9 +1194,33 @@ do{
 }
 ```
 
-* break 语句用于终止某个语句块的执行，一般使用在 switch 或者循环[ for , while , do-while ]中
+* 出现在switch语句用来终止switch语句的执行。
 
-### 3.5 跳转控制语句 continue
+* 出现在循环[ for , while , do-while ]中，用来终止循环的执行。
+
+* 默认情况下，单独使用“break;”语句，终止的是离它最近的循环。
+
+* break 循环标记; 用来终止指定的循环。
+
+  ```java
+  f1:for(int j = 0; j < 2; j++){
+      f2:for(int i = 1; i <= 10; i++){
+          if(i == 5){
+              break f1;
+          }
+          System.out.println("i = " + i);
+      }
+  }
+  /**
+   * 输出：
+   * 		i = 1
+   * 		i = 2
+   * 		i = 3
+   * 		i = 4
+   */
+  ```
+
+#### continue
 
 ```java
 {
@@ -1162,9 +1230,79 @@ do{
 }
 ```
 
-* continue 语句用于结束本次循环，继续执行下一次循环
+* continue; 终止当前本次循环，直接进入离它最近的循环继续。
 
-### 3.6 跳转控制语句 return
+* continue 循环标记; 终止当前本次循环，直接进入指定的循环继续。
+
+  ```java
+  f1:for(int j = 0; j < 2; j++){
+      f2:for(int i = 1; i < 10; i++){
+          if(i == 5){
+              continue f1;
+          }
+          System.out.println("i = " + i);
+      }
+  }
+  /**
+   * 输出：
+   * 		i = 1
+   * 		i = 2
+   * 		i = 3
+   * 		i = 4
+   * 		i = 1
+   * 		i = 2
+   * 		i = 3
+   * 		i = 4
+   */
+  ```
+
+  
+
+#### return
+
+* break; 终止循环。
+* return; 终止方法。
+
+## package
+
+package包机制：
+
+* 包机制作用：便于代码管理。
+
+* 怎么定义包：在java源码第一行编写 package 语句。注意：package语句只能出现在java代码第一行。
+
+* 包名命名规范中要求是全部小写。
+
+* 包名命名规范：公司域名倒序 + 项目名 + 模块名 + 功能名。例如：
+
+  com.powernode.oa.empgt.service
+
+* 如果带包编译：javac -d 编译后的存放目录 java源文件路径
+
+* 有了包机制后，完整类名是包含包名的，例如类名是：com.powernode.javase.chapter02.PackageTest
+
+## import
+
+* import语句用来引入其他类。
+
+* A类中使用B类，A类和B类不在同一个包下时，就需要在A类中使用import引入B类。
+
+* java.lang包下的不需要手动引入。
+
+* import语句只能出现在package语句之下，class定义之前。
+
+* import语句可以编写多个。
+
+* import语句可以模糊导入：java.util.*;*
+
+* import支持静态导入
+
+  ```java
+  import static java.lang.System.*;//将System类的所有静态变量和静态方法全部导入
+  out.out.println("hello") //等同System.out.println("hello");
+  ```
+
+  
 
 # 数组
 
@@ -1447,33 +1585,30 @@ class Tools {
 
 ![96db0d047d696589fa33f6db510a47e](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031629072.png)
 
-* 当程序执行到方法时，就会开辟一个独立的空间（栈空间）
-* 当方法执行完毕，或者执行到return语句时，就会返回到调用的地方，同时开辟的栈空间释放
+![image-20240718113211119](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407181132237.png)
+
+* 方法只定义不调用是不会分配内存的。只是方法的字节码指令存储在元空间（方法区）中。
+* 方法调用时会给该方法在JVM的栈内存中分配空间，此时发生压栈动作。这个方法的空间被称为栈帧。
+* 栈帧中主要包括：局部变量表，操作数栈等。
+* 当方法执行完毕，或者执行到return语句时，就会返回到调用的地方，同时该栈帧弹栈，方法内存空间释放
 * 返回后继续执行后面的代码
 * 当main方法（栈）执行完毕，整个程序退出，同时main栈空间也释放
 
 #### 2.3 成员方法的定义
 
 ```java
-访问修饰符  返回数据类型  方法名（形参列表）{
+[访问修饰符]  返回数据类型  方法名（形参列表）{
     语句;
     return 返回值;
 }
 ```
 
-* 形参列表：表示成员方法的输入
-* 返回数据类型：表示成员方法的输出，void 表示没有返回值
-* return 语句不是必须的
+* 返回数据类型：用来指定方法返回值的数据类型（方法执行结束后的结果类型）。只要是Java合法的数据类型，都可以，如果方法执行结束时没有返回任何数据，返回值类型也不能空着，需要写void关键字。
+* 形参列表：简称形参。用来接收数据。参数个数0~N个。如果有多个，使用逗号隔开。每一个形式参数都可以看做局部变量。
 
 #### 2.4 方法使用细节
 
 * 一个方法**最多有一个**返回值（返回多个结果可以采用数组）
-
-  ```
-  
-  ```
-
-  
 
 * 返回数据类型可以是任意类型，包含基本类型或引用类型（数组，对象）
 
@@ -1488,6 +1623,8 @@ class Tools {
 * 调用带参数的方法时，一定对应着参数列表传入相同或兼容类型的参数
 
 * 方法不能嵌套定义！
+
+* 调用方法：如果方法执行结束后有返回值，可以采用变量接收该返回值。当然，也可以选择不接收
 
 * 同一个类中的方法调用：直接调用
 
@@ -1655,9 +1792,7 @@ class Tools {
 
 ## 1. IntelliJ IDEA
 
-### 1.1 破解方法
-
-### 1.2 常用快捷键
+### 常用快捷键
 
 ```java
 Ctrl + Y  		//删除当前行
@@ -1671,11 +1806,43 @@ Ctrl + Alt + L  //格式化代码
 .var 			//自动分配变量名
 ```
 
-### 1.3 模板
+```
+alt+insert（新建/新增任何东西）
+退出任何窗口ESC
+编写源码的窗口最大化ctrl+shift+F12
+psvm生成main方法
+快速生成输出语句sout
+IDEA会自动保存，自动编译
+打开Project窗口alt+1
+查找某个类：敲两次shift，选择classes，输入类名
+切换选项卡：alt + 左右方向键
+自动生成变量.var
+删除一行ctrl+y
+复制一行ctrl+d
+在一个类当中查找方法ctrl+F12
+生成for循环：fori
+自动生成if语句.if
+单行注释：ctrl + /
+多行注释：ctrl + shift + /
+查看源码：按ctrl别松手，鼠标移动到对应的类名下方，出现下划线，点击过去，可以查看类源码。
+多行编辑：按alt别松手，鼠标拖动多行，完成多行编辑。
+怎么快速生成创建对象语句：类名.new.var
+怎么快速生成if语句：布尔类型值.if
+怎么快速生成setter和getter方法：alt + insert，然后选择setter and getter生成。
+怎么快速生成构造方法：alt + insert，然后选择Constructor。
+在IDEA当中如何自动纠错：将光标移动到错误的位置，按atl + enter。会有提示，根据提示进行纠错。
+移动代码到上一行：alt + shift + 上/下方向
+怎么快速重写方法？alt + insert，选择Override....
+怎么快速重写方法？ctrl + o
+快速向下转型，并同时生成变量名：变量名.castvar
+快速查看方法的参数：ctrl + p
+返回上一步：ctrl + alt + 左方向键。 下一步：ctrl + alt + 右方向键。
+代码格式化：ctrl + alt + L。
+查看继承结构：ctrl + H
+自动代码包裹：ctrl + alt + t
 
-<img src="https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031629597.png" alt="fe7d7a882c47230beeb10f986f9d84b" style="zoom:150%;" />
 
-## 2. 包
+```
 
 
 
