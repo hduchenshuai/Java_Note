@@ -1299,7 +1299,7 @@ package包机制：
 
   ```java
   import static java.lang.System.*;//将System类的所有静态变量和静态方法全部导入
-  out.out.println("hello") //等同System.out.println("hello");
+  out.println("hello") //等同System.out.println("hello");
   ```
 
   
