@@ -1302,7 +1302,62 @@ package包机制：
   out.println("hello") //等同System.out.println("hello");
   ```
 
-  
+
+## IntelliJ IDEA
+
+### 常用快捷键
+
+```java
+Ctrl + Y  		//删除当前行
+Ctrl + D 		//复制当前行
+Alt + /  		//自动补全代码
+Alt + Enter 	//导入该行需要的类
+Alt + Ins		//生成构造器
+Ctrl + H   		//查看类的层级关系
+Ctrl + B		//定位方法
+Ctrl + Alt + L  //格式化代码
+.var 			//自动分配变量名
+```
+
+```
+alt+insert（新建/新增任何东西）
+退出任何窗口ESC
+编写源码的窗口最大化ctrl+shift+F12
+psvm生成main方法
+快速生成输出语句sout
+IDEA会自动保存，自动编译
+打开Project窗口alt+1
+查找某个类：敲两次shift，选择classes，输入类名
+切换选项卡：alt + 左右方向键
+自动生成变量.var
+删除一行ctrl+y
+复制一行ctrl+d
+在一个类当中查找方法ctrl+F12
+生成for循环：fori
+自动生成if语句.if
+单行注释：ctrl + /
+多行注释：ctrl + shift + /
+查看源码：按ctrl别松手，鼠标移动到对应的类名下方，出现下划线，点击过去，可以查看类源码。
+多行编辑：按alt别松手，鼠标拖动多行，完成多行编辑。
+怎么快速生成创建对象语句：类名.new.var
+怎么快速生成if语句：布尔类型值.if
+怎么快速生成setter和getter方法：alt + insert，然后选择setter and getter生成。
+怎么快速生成构造方法：alt + insert，然后选择Constructor。
+在IDEA当中如何自动纠错：将光标移动到错误的位置，按atl + enter。会有提示，根据提示进行纠错。
+移动代码到上一行：alt + shift + 上/下方向
+怎么快速重写方法？alt + insert，选择Override....
+怎么快速重写方法？ctrl + o
+快速向下转型，并同时生成变量名：变量名.castvar
+快速查看方法的参数：ctrl + p
+返回上一步：ctrl + alt + 左方向键。 下一步：ctrl + alt + 右方向键。
+代码格式化：ctrl + alt + L。
+查看继承结构：ctrl + H
+自动代码包裹：ctrl + alt + t
+
+
+```
+
+
 
 # 数组
 
@@ -1489,7 +1544,7 @@ package包机制：
 
   
 
-# 面向对象编程（基础）
+# 面向对象编程
 
 ## 面向对象概述
 
@@ -1498,7 +1553,7 @@ package包机制：
 
 
 
-## 1 类与对象
+## 类与对象
 
 * 类：
   * 现实世界中，事物与事物之间具有共同特征，将这些共同的状态和行为提取出来，形成了一个模板，称为类
@@ -1511,7 +1566,13 @@ package包机制：
   * 对象又称为实例，通过类这个模板可以实例化n个对象。（通过类可以创造多个对象）
   * 创建一个对象 == 实例化一个对象 == 把类实例化
 
-### 1.1 对象内存布局
+### 对象内存布局
+
+* new运算符会在JVM的堆内存中分配空间用来存储实例变量。new分配的空间就是Java对象。
+* 在JVM中对象创建后会有对应的内存地址，将内存地址赋值给一个变量，这个变量被称为引用。
+* Java中的GC主要针对的是JVM的堆内存。
+
+![3db858e54206d10a96957454856bf33](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407191515415.png)
 
 ![8c49c6140057575b569631b0391656d](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031628906.png)
 
@@ -1523,14 +1584,14 @@ package包机制：
 
 多个对象在堆内存中，都有不同的内存划分，成员变量存储在各自的内存区域中，成员方法多个对象共用的一份
 
-### 1.2 属性概念
+### 属性概念
 
 * 叫法上 ：属性 == 成员变量 == feild(字段) ，成员变量是用来表示属性的。
 * 属性是类的一个组成部分，一般是基本数据类型，也可以是引用类型。
 * 属性的定义语法同变量 ，示例： 访问修饰符 属性类型  属性名；
 * 属性如果不赋值，有默认值，规则和数组一致。
 
-### 1.3成员变量和局部变量
+### 成员变量和局部变量
 
  **成员变量和局部变量的区别：**
 
@@ -1539,7 +1600,7 @@ package包机制：
 * 生命周期不同：成员变量（随着对象的存在而存在，随着对象的消失而消失）局部变量（随着方法的调用而存在，醉着方法的调用完毕而消失）
 * 初始化值不同：成员变量（有默认初始化值）局部变量（没有默认初始化值，必须先定义，赋值才能使用）
 
-### 1.4 类和对象的内存分配机制
+### 类和对象的内存分配机制
 
 ![adda3e7f97927b3ae60dcef5044c2a8](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031629096.png)
 
@@ -1547,9 +1608,9 @@ package包机制：
 * 堆：存放对象（Cat cat ，数组等）
 * 方法区：常量池（常量，比如字符串），类加载信息（每个类只会加载一次）
 
-## 2 成员方法
+## 成员方法
 
-#### 2.1 方法快速入门
+#### 方法快速入门
 
 ```java
 public class method {
@@ -1581,7 +1642,7 @@ class Tools {
 }
 ```
 
-#### 2.2 方法调用机制
+#### 方法调用机制
 
 ![96db0d047d696589fa33f6db510a47e](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031629072.png)
 
@@ -1594,7 +1655,7 @@ class Tools {
 * 返回后继续执行后面的代码
 * 当main方法（栈）执行完毕，整个程序退出，同时main栈空间也释放
 
-#### 2.3 成员方法的定义
+#### 成员方法的定义
 
 ```java
 [访问修饰符]  返回数据类型  方法名（形参列表）{
@@ -1606,7 +1667,7 @@ class Tools {
 * 返回数据类型：用来指定方法返回值的数据类型（方法执行结束后的结果类型）。只要是Java合法的数据类型，都可以，如果方法执行结束时没有返回任何数据，返回值类型也不能空着，需要写void关键字。
 * 形参列表：简称形参。用来接收数据。参数个数0~N个。如果有多个，使用逗号隔开。每一个形式参数都可以看做局部变量。
 
-#### 2.4 方法使用细节
+#### 方法使用细节
 
 * 一个方法**最多有一个**返回值（返回多个结果可以采用数组）
 
@@ -1630,15 +1691,13 @@ class Tools {
 
 * 跨类中的方法调用：需要通过对象名调用
 
-#### 2.5 方法传参机制
+#### 方法传参机制
 
 基本数据类型，传递的是值（值拷贝），形参的任何改变不影响实参
 
 引用类型传递的是地址（传递的也是值，但是值是地址），可以通过形参影响实参
 
-#### 2.6 方法递归调用
-
-#### 2.7 方法的重载
+#### 方法的重载
 
 * 方法重载概念
 
@@ -1653,7 +1712,7 @@ class Tools {
   * 重载仅对应方法的定义，与方法的调用无关，调用方式参照标准格式
   * 重载仅针对同一个类中方法的名称与参数进行识别，与返回值无关，换句话说不能通过返回值来判定两个方法是否相互构成重载
 
-#### 2.8 可变参数
+#### 可变参数
 
 * 语法格式：`数据类型...`
 
@@ -1709,9 +1768,7 @@ class Tools {
 
   
 
-## 3 变量作用域
-
-## 4 构造器
+## 构造器
 
 * 基本介绍
 
@@ -1771,82 +1828,27 @@ class Tools {
   
   
 
-## 5 this
+## this
 
-* this出现在实例方法中，代表当前对象的引用（地址值），即代表当前对象
-* `this.`大部分情况下可以省略
+* this是一个关键字
+* this出现在实例方法中，代表当前对象。语法是：`this.`
+* this本质上是一个引用，该引用保存当前对象的内存地址
+* 通过`this.`可以访问实例变量，可以调用实例方法。
 * this可以区分局部变量和成员变量的重名问题
   * 方法的形参如果与成员变量同名，不带this修饰的变量指的是形参，而不是成员变量
   * 方法的形参没有与成员变量同名，不带this修饰的变量指的是成员变量
+* `this.`大部分情况下可以省略，用于区分局部变量和实例变量时不能省略
+* this不能出现在静态方法中
 * this存储在**实例方法栈帧的局部变量表的0号槽位**上
 
 ![image-20240703112308614](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031123697.png)
 
-* this不能出现在静态方法中
 * `this(实参)`语法：
   * 只能出现在构造方法的第一行
   * 通过当前构造方法去调用本类中其他的构造方法
   * 作用是：代码复用
 
-# 面向对象编程（中级）
-
-## 1. IntelliJ IDEA
-
-### 常用快捷键
-
-```java
-Ctrl + Y  		//删除当前行
-Ctrl + D 		//复制当前行
-Alt + /  		//自动补全代码
-Alt + Enter 	//导入该行需要的类
-Alt + Ins		//生成构造器
-Ctrl + H   		//查看类的层级关系
-Ctrl + B		//定位方法
-Ctrl + Alt + L  //格式化代码
-.var 			//自动分配变量名
-```
-
-```
-alt+insert（新建/新增任何东西）
-退出任何窗口ESC
-编写源码的窗口最大化ctrl+shift+F12
-psvm生成main方法
-快速生成输出语句sout
-IDEA会自动保存，自动编译
-打开Project窗口alt+1
-查找某个类：敲两次shift，选择classes，输入类名
-切换选项卡：alt + 左右方向键
-自动生成变量.var
-删除一行ctrl+y
-复制一行ctrl+d
-在一个类当中查找方法ctrl+F12
-生成for循环：fori
-自动生成if语句.if
-单行注释：ctrl + /
-多行注释：ctrl + shift + /
-查看源码：按ctrl别松手，鼠标移动到对应的类名下方，出现下划线，点击过去，可以查看类源码。
-多行编辑：按alt别松手，鼠标拖动多行，完成多行编辑。
-怎么快速生成创建对象语句：类名.new.var
-怎么快速生成if语句：布尔类型值.if
-怎么快速生成setter和getter方法：alt + insert，然后选择setter and getter生成。
-怎么快速生成构造方法：alt + insert，然后选择Constructor。
-在IDEA当中如何自动纠错：将光标移动到错误的位置，按atl + enter。会有提示，根据提示进行纠错。
-移动代码到上一行：alt + shift + 上/下方向
-怎么快速重写方法？alt + insert，选择Override....
-怎么快速重写方法？ctrl + o
-快速向下转型，并同时生成变量名：变量名.castvar
-快速查看方法的参数：ctrl + p
-返回上一步：ctrl + alt + 左方向键。 下一步：ctrl + alt + 右方向键。
-代码格式化：ctrl + alt + L。
-查看继承结构：ctrl + H
-自动代码包裹：ctrl + alt + t
-
-
-```
-
-
-
-## 3. 访问修饰符
+## 访问修饰符
 
 * private（私有的）无法访问：使用private关键字，就意味着被声明的成员或方法，除了本类，其他任何类都无法访问。
 
@@ -1858,11 +1860,11 @@ IDEA会自动保存，自动编译
   ![f2addb23c780eeea2c79c4cd24af044](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031629456.png)
 
 * 注意事项：
-  * 类中的属性和方法访问权限共有四种：private、缺省默认、protected和public
-  * 类的访问权限只有两种：public和 缺省
+  * 类中的属性和方法访问权限共有四种：private、缺省默认、protected 和 public
+  * 类的访问权限只有两种：public 和 缺省
   * 访问修饰符不能修饰局部变量
 
-## 4. 封装
+## 封装
 
 * 面向对象三大特征之一：封装
 
@@ -1881,7 +1883,7 @@ IDEA会自动保存，自动编译
 
 ​	
 
-## 5. 继承
+## 继承
 
 * 面向对象三大特征之一：继承
 
@@ -1897,7 +1899,7 @@ IDEA会自动保存，自动编译
 * 细节
   * Java只支持单继承，一个类只能直接继承一个类
   * Java不支持多继承，但支持多重继承（多层继承）
-  * 子类继承父类后，除私有的不支持继承、构造方法不支持继承。其它的全部会继承
+  * 子类继承父类后，除**私有的不支持继承、构造方法不支持继承**。其它的全部会继承
   * 子类继承了所有的属性和方法，但是私有的属性和方法不能在子类直接访问，要通过父类提供公共的方法去访问
   * 一个类没有显示继承任何类时，默认继承java.lang.Object类
   * Object类是JDK类库的根类，Java中所有类都是Object类的子类
@@ -1943,9 +1945,7 @@ class Son extends Father{
 
 
 
-## 6. super
-
-super代表父类的引用，用于访问父类的属性，方法，构造器
+## super
 
 **基本语法：**
 
@@ -1955,15 +1955,78 @@ super代表父类的引用，用于访问父类的属性，方法，构造器
 
 2. 访问父类的方法，但不能访问父类的private方法
 
-   super.方法名(参数列表）
+   super.方法名(实参）
 
 3. 访问父类的构造器，只能放在子类的构造器的第一句，且只能出现一句
 
-   super.(参数列表）
+   super(实参）
+
+   
+
+**super是什么？**
+
+**this代表的是当前对象。super代表的是当前对象中的父类型特征**
+
+```java
+public class Test01 {
+    public static void main(String[] args) {
+
+        Teacher t = new Teacher("张三", 20, "zhangsan@123.com", "北京朝阳", 10000.0);
+        t.display();
+    }
+}
+class Person {
+
+    String name;
+    int age;
+    String email;
+    String address;
+
+    public Person() {
+    }
+}
+class Teacher extends Person{
+  	//特有属性
+    double sal;
+    
+    String name;
+
+    public Teacher() {
+    }
+    
+    public Teacher(String name, int age, String email, String address, double sal) {
+        //隐藏super();  调用父类无参构造，完成父类初始化，4个属性都初始化为默认值
+        
+        //对以下继承的属性赋值，覆盖了之前的初始化
+        this.name = name; 
+        this.age = age;
+        this.email = email;
+        this.address = address;
+        
+        this.sal = sal;
+	}
+    
+    public void display() {
+        
+        System.out.println(super.name);//null
+        System.out.println(this.name);//张三
+
+    }
+}
+```
+
+![9edf5b06313d2e2e896fb9108d9e53e](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407191703888.png)
+
+
+
+
 
 **super细节：**
 
-当子类与父类中的成员（属性和方法）有重名时，为了访问父类的成员，必须通过super 。如果没有重名，则使用super、this和直接访问是一样的效果。
+* super不能使用在静态上下文中。
+* this可以直接打印输出，而super不行
+
+* 当子类与父类中的成员（属性和方法）有重名时，为了访问父类的成员，super.不能省略
 
 ```java
 public class SuperDetail {
@@ -2013,7 +2076,95 @@ A的cal()被调用
 4. 如果查找过程中，找到了，但是私有的不能访问，则报错
 5. 如果查找过程中，没有找到，则提示方法不存在，编译不通过
 6. super.cal() 的查找规则是直接查找父类，没有再向上查找，即跳过本类，其他规则一样
-7. 属性同理
+7. **属性同理**
+
+
+
+**supe(..)**
+
+* super(实参); 通过子类的构造方法调用父类的构造方法，目的是为了完成父类型特征的初始化
+
+* 当一个构造方法第一行没有显示的调用“super(实参);”，也没有显示的调用“this(实参)”，系统会自动调用super()。因此一个类中的无参数构造方法建议显示的定义出来。
+
+* super(实参); 这个语法只能出现在构造方法第一行，故不能与this()共存
+
+* 在Java语言中只要new对象，Object的无参数构造方法一定会执行
+
+* 父有子没有：super. = this. = 子构造器初始化的
+
+  父有子有：super. 是父构造器初始化的   this. = 子构造器初始化的
+
+  父没有子有：super. 报错      this. = 子构造器初始化的
+
+  代码示例：
+
+  ```java
+  public class test {
+      public static void main(String[] args) {
+  
+          Teacher t = new Teacher("张三", 20, "zhangsan@123.com", "北京朝阳", 10000.0);
+          t.display();
+      }
+  }
+  class Person {
+  
+      String name;
+      int age;
+      String email;
+      String address;
+  
+      public Person() {
+      }
+  
+      public Person(String name, int age, String email, String address) {
+          this.name = name;
+          this.age = age;
+          this.email = email;
+          this.address = address;
+      }
+  }
+  class Teacher extends Person{
+      //特有属性
+      double sal;
+  
+      String name;
+  
+      public Teacher() {
+      }
+  
+      public Teacher(String name, int age, String email, String address, double sal) {
+          super("chen",16,"www","ah");
+          this.name = name;
+          this.age = age;
+          this.email = email;
+          this.address = address;
+          this.sal = sal;
+      }
+  
+      public void display() {
+  		/**
+  		name属性:父有子有  -- 访问的super.name是父构造器初始化的,this.name是子构造器初始化的值
+          age email address属性：父有子没有 --访问的super.xx和this.xx都是子构造器初始化的值
+          sal属性：父没有子有 --访问不了super.sal,编译错误;this.sal是子构造器初始化的值
+           */ 
+          System.out.println(super.name);//chen 
+          System.out.println(super.age);//20
+          System.out.println(super.email);//zhangsan@123.com
+          System.out.println(super.address);//北京朝阳
+          System.out.println(super.sal);//编译报错
+  
+          System.out.println(this.name);//张三
+          System.out.println(this.age);//20
+          System.out.println(this.email);//zhangsan@123.com
+          System.out.println(this.address);//北京朝阳
+  
+          System.out.println(this.sal);//10000.0
+  
+      }
+  }
+  ```
+
+  
 
 **super和this的比较：**
 
@@ -2499,13 +2650,19 @@ java.lang.Object是所有类的超类。java中所有类都实现了这个类中
 
 
 
-# 面向对象编程（高级）
 
-## 1. 类变量和类方法（static关键字）
 
-### 1.1 类变量
+## static关键字
 
-* 类变量也叫静态变量/静态属性，是该类的所有对象共享的变量，任何一个该类的对象去访问它时，取到的值都相同，同样任何一个该类的对象去修改它时，修改的也是同一个变量。
+static是一个关键字，翻译为：静态的。
+
+static修饰的变量叫做静态变量,static修饰的方法叫做静态方法
+
+所有static修饰的，访问的时候，直接采用“类名.”，不需要new对象
+
+### 静态变量
+
+* 静态变量/静态属性/类变量，是该类的所有对象共享的变量，任何一个该类的对象去访问它时，取到的值都相同，同样任何一个该类的对象去修改它时，修改的也是同一个变量。
 
 * 使用场景：当所有对象的某个属性的值是相同的，建议将该属性定义为静态变量，来节省内存的开销
 
@@ -2515,11 +2672,11 @@ java.lang.Object是所有类的超类。java中所有类都实现了这个类中
 
 ​		`static  访问修饰符  数据类型  变量名   ；`
 
-* 访问类变量：
+* 访问静态变量：
 
-​    	类名 **.**  类变量名
+​    	类名 **.**  静态变量名
 
-​		对象名 **.**  类变量名
+​		对象名 **.**  静态变量名
 
 ​		静态变量的访问修饰符的访问权限和普通属性一致
 
@@ -2539,24 +2696,24 @@ class A {
 ```
 
 * 注意事项和细节
-  * 加上static称为类变量或静态变量，否则称为实例变量/普通变量/非静态变量
-  * 类变量是该类的所有对象共享的，而实例变量是每个对象独享的
+  * 加上 static 称为类变量或静态变量，否则称为实例变量/普通变量/非静态变量
+  * 静态变量是该类的所有对象共享的，而实例变量是每个对象独享的
   * 实例变量不能通过 类名.类变量名 方式来访问
-  * static修饰的成员属于类，会存储在一块固定的内存区域（jdk8以后，这个区域在堆内存中），是随着类的加载而加载的，且只加载一次，所以只有一份，节省内存。所以，即使没有创建对象实例也可以访问，可以直接被类名调用。它优先于对象存在，所以，可以被所有对象共享。
-  * 类变量的生命周期是随着类的加载开始，随着类消亡而销毁
+  * static 修饰的成员属于类，会存储在一块固定的内存区域（jdk8以后，这个区域在堆内存中），是随着类的加载而加载的，且只加载一次，所以只有一份，节省内存。所以，即使没有创建对象实例也可以访问，可以直接被类名调用。它优先于对象存在，所以，可以被所有对象共享。
+  * 静态变量的生命周期是随着类的加载开始，随着类消亡而销毁
   * 使用“引用.”访问静态相关的（静态方法或者变量），即使引用为null，也不会出现空指针异常
 
-### 1.2 类方法
+### 静态方法
 
 * 基本介绍：
 
-  类方法也叫静态方法
+  静态方法也叫类方法
 
   `访问修饰符 static 数据返回类型 方法名(){}`
 
   `static 访问修饰符 数据返回类型 方法名(){}`
 
-* 类方法的调用：
+* 静态方法的调用：
 
   类名.类方法
 
@@ -2570,23 +2727,26 @@ class A {
 
 * 注意事项和细节：
 
-  * 类方法和普通方法都是随着类的加载而加载，将结构信息存储在方法区
+  * 静态方法和普通方法都是随着类的加载而加载，将结构信息存储在方法区
 
-  * 类方法中无this的参数
+  * 静态方法中无this的参数
 
-    普通方法中隐含着this参数
+    实例方法中隐含着this参数
 
-  * 普通方法和对象有关，需要通过对象名调用，不能通过类名调用
+  * 实例方法和对象有关，需要通过对象名调用，不能通过类名调用
 
-    类方法既可以通过类名调用，也可以通过对象名调用
+    静态方法既可以通过类名调用，也可以通过对象名调用
 
-  * 类方法中不允许使用和对象有关的关键字，比如this和super
+  * 静态方法中不允许使用和对象有关的关键字，比如this和super，因此无法直接访问实例变量和调用实例方法，只能访问 静态变量 或 静态方法
 
-  * 类方法中只能访问 静态变量 或 静态方法
+  * 实例方法既可以访问非静态变量（方法），也可以访问静态变量（方法），同时遵循访问权限
 
-  * 普通成员方法既可以访问非静态变量（方法），也可以访问静态变量（方法），同时遵循访问权限
+### 静态代码块
 
-    
+* 静态代码块在类加载时执行，一个类中可以编写多个静态代码块，遵循自上而下的顺序依次执行。
+* 静态代码块代表了类加载时刻，如果你有代码需要在此时刻执行，可以将该代码放到静态代码块中。
+
+
 
 ## 2. main方法
 
