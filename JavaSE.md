@@ -1995,9 +1995,7 @@ class Teacher extends Person{
     }
     
     public Teacher(String name, int age, String email, String address, double sal) {
-        //隐藏super();  调用父类无参构造，完成父类初始化，4个属性都初始化为默认值
-        
-        //对以下继承的属性赋值，覆盖了之前的初始化
+             
         this.name = name; 
         this.age = age;
         this.email = email;
@@ -2019,66 +2017,15 @@ class Teacher extends Person{
 
 
 
-
-
 **super细节：**
 
 * super不能使用在静态上下文中。
+
 * this可以直接打印输出，而super不行
 
-* 当子类与父类中的成员（属性和方法）有重名时，为了访问父类的成员，super.不能省略
+* 主要作用：当子类与父类中的成员（属性和方法）有重名时，为了访问父类的成员，必须使用super.
 
-```java
-public class SuperDetail {
-    public static void main(String[] args) {
-        B b = new B();
-        b.sum();
-    }
-}
-class A{
-    public int n = 1;
-    public void cal(){
-        System.out.println("A的cal()被调用");
-    }
-}
-class B extends A{
-    public int n = 2;
-    public void cal(){
-        System.out.println("B的cal()被调用");
-    }
-
-    public void sum(){
-        cal();
-        this.cal();
-        super.cal();
-
-        System.out.println(n);
-        System.out.println(this.n);
-        System.out.println(super.n);
-    }
-}
-```
-
-```java
-B的cal()被调用
-B的cal()被调用
-A的cal()被调用
-2
-2
-1
-```
-
-找cal方法规则（cal() 和 this.cal() )：
-
-1. 先找本类，如果有，则调用
-2. 如果本类没有，则找父类，如果有，并且可以调用，则调用
-3. 如果父类也没有，则继续向上查找，直到Object类
-4. 如果查找过程中，找到了，但是私有的不能访问，则报错
-5. 如果查找过程中，没有找到，则提示方法不存在，编译不通过
-6. super.cal() 的查找规则是直接查找父类，没有再向上查找，即跳过本类，其他规则一样
-7. **属性同理**
-
-
+  
 
 **supe(..)**
 
@@ -2090,87 +2037,122 @@ A的cal()被调用
 
 * 在Java语言中只要new对象，Object的无参数构造方法一定会执行
 
-* 父有子没有：super. = this. = 子构造器初始化的
-
-  父有子有：super. 是父构造器初始化的   this. = 子构造器初始化的
-
-  父没有子有：super. 报错      this. = 子构造器初始化的
-
-  代码示例：
+* 关于访问 this.属性 与 super.属性：
 
   ```java
-  public class test {
+  /*
+  访问规则：
+  父特有属性：super.属性 = this.属性 = 子构造器初始化的
+  子特有属性：super.属性->报错   this.属性 = 子构造器初始化的
+  父有子有：super.属性 是父构造器初始化的   this.属性 = 子构造器初始化的
+  */
+  public class Test {
       public static void main(String[] args) {
-  
-          Teacher t = new Teacher("张三", 20, "zhangsan@123.com", "北京朝阳", 10000.0);
-          t.display();
+          B b = new B(7,8,9);
+          b.disPlay();
       }
   }
-  class Person {
+  class A{
+      public int a = 1;
+      public int ab = 3;
   
-      String name;
-      int age;
-      String email;
-      String address;
-  
-      public Person() {
+      public A(int a, int ab) {
+          this.a = a;
+          this.ab = ab;
       }
   
-      public Person(String name, int age, String email, String address) {
-          this.name = name;
-          this.age = age;
-          this.email = email;
-          this.address = address;
+  
+  }
+  class B extends A{
+      public int b = 2;
+      public int ab = 4;
+  
+      public B(int a, int ab, int b) {
+          super(5,6);
+          this.a = a;
+          this.ab = ab;
+          this.b = b;
+  
+  
+      }
+      public void disPlay(){
+          System.out.println(this.a);//7
+          System.out.println(this.b);//9
+          System.out.println(this.ab);//8
+          System.out.println(super.a);//7
+  //        System.out.println(super.b); 编译报错
+          System.out.println(super.ab);//6
       }
   }
-  class Teacher extends Person{
-      //特有属性
-      double sal;
-  
-      String name;
-  
-      public Teacher() {
-      }
-  
-      public Teacher(String name, int age, String email, String address, double sal) {
-          super("chen",16,"www","ah");
-          this.name = name;
-          this.age = age;
-          this.email = email;
-          this.address = address;
-          this.sal = sal;
-      }
-  
-      public void display() {
-  		/**
-  		name属性:父有子有  -- 访问的super.name是父构造器初始化的,this.name是子构造器初始化的值
-          age email address属性：父有子没有 --访问的super.xx和this.xx都是子构造器初始化的值
-          sal属性：父没有子有 --访问不了super.sal,编译错误;this.sal是子构造器初始化的值
-           */ 
-          System.out.println(super.name);//chen 
-          System.out.println(super.age);//20
-          System.out.println(super.email);//zhangsan@123.com
-          System.out.println(super.address);//北京朝阳
-          System.out.println(super.sal);//编译报错
-  
-          System.out.println(this.name);//张三
-          System.out.println(this.age);//20
-          System.out.println(this.email);//zhangsan@123.com
-          System.out.println(this.address);//北京朝阳
-  
-          System.out.println(this.sal);//10000.0
-  
-      }
-  }
+  //注意：执行顺序：默认初始化->显示初始化->构造器初始化
+  //     规则中说的是父/子构造器初始化的，若构造器没有初始化动作的话：
+  //	   不论有参无参构造，对某个属性没有初始化动作 则反看其显示初始化，若没有显示初始化，则再反看默认初始化
   ```
 
+* 关于访问 this.方法 与 super.方法：
+
+  ```java
+  /*
+  this.方法 （同直接方法名调用） 查找规则：
+      1. 先找本类，如果有，则调用
+      2. 如果本类没有，则找父类，如果有，并且可以调用，则调用
+      3. 如果父类也没有，则继续向上查找，直到Object类
+      4. 如果查找过程中，找到了，但是私有的不能访问，则报错
+      5. 如果查找过程中，没有找到，则提示方法不存在，编译不通过
+  super.方法 的查找规则是直接查找父类，没有再向上查找，即跳过本类，其他规则一样
+  */
+  
+  public class Test {
+      public static void main(String[] args) {
+          B b = new B();
+          b.disPlay();
+      }
+  }
+  class A{
+  
+      public void methodA(){
+          System.out.println("A特有方法执行了");
+      }
+      public void methodAB(){
+          System.out.println("父类AB方法执行了");
+      }
+  
+  }
+  class B extends A{
+  
+      public void methodB(){
+          System.out.println("B特有方法执行了");
+      }
+  
+      @Override
+      public void methodAB() {
+          System.out.println("子类重写的AB方法执行了");
+      }
+  
+      public void disPlay(){
+  
+          this.methodA();
+          this.methodB();
+          this.methodAB();
+          super.methodA();
+  //        super.methodB();编译错误
+          super.methodAB();
+      }
+  }
+  /*
+  输出：
+          A特有方法执行了
+          B特有方法执行了
+          子类重写的AB方法执行了
+          A特有方法执行了
+          父类AB方法执行了
+  
+  */
+  ```
+  
   
 
-**super和this的比较：**
-
-![4600fb42005ba8ccba3374fcc20be79](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031629428.png)
-
-## 7. 方法重写/覆盖(override)
+## 方法重写/覆盖(override)
 
 * 什么情况下考虑使用方法覆盖？
 
@@ -2180,7 +2162,7 @@ A的cal()被调用
   * 具有继承关系的父子类之间
   * 具有相同的方法名（必须严格一样）
   * 具有相同的形参列表（必须严格一样）
-  * 具有相同的返回值类型（可以是父类方法返回值类型的子类）
+  * 具有相同的返回值类型（**可以是父类方法返回值类型的子类**）
 
 * 方法覆盖细节：
 
@@ -2189,9 +2171,10 @@ A的cal()被调用
   * @Override注解标注的方法会在编译阶段检查该方法是否重写了父类的方法
   * 如果返回值类型是引用数据类型，那么重写方法的返回值类型可以是原类型的子类型
   * 访问权限不能变低，可以变高（public > protected > 默认 > private)
-  * 抛出异常不能变多，可以变少
+  * 不能抛出比父类更高级别的异常
   * 私有方法不能继承，所以不能覆盖
   * 构造方法不能继承，所以不能覆盖
+  * static,final修饰的方法不能覆盖
   * 方法覆盖针对实例方法，和静态方法无关
   * 方法覆盖针对实例方法，和实例变量无关
 
@@ -2203,7 +2186,7 @@ A的cal()被调用
 
 
 
-## 8. 多态（polymorphic）
+## 多态（polymorphic）
 
 * **什么是向上转型和向下转型？**
 
@@ -2211,22 +2194,37 @@ A的cal()被调用
 
   * 向上转型：子类型的对象可以赋值给一个父类型的引用
 
-    ​					`父类类型（不仅限于直接父类）	引用名	=	new	子类类型（）；`
+    ```
+    父类类型（不仅限于直接父类）	引用名	=	new	子类类型（）；
+    Animal animal = new Cat();
+    ```
 
-  * 向下转型：父类型的引用可以转换为子类型的引用。但是需要加强制类型转换符
+    可以调用父类中的所有成员（需遵守访问权限）；不能调用子类中特有成员；最终运行效果看子类的具体实现
 
-    ​                    `子类类型	引用名	=	（子类类型）父类引用；`
+    
+
+  * 向下转型：父类型的引用可以转换为子类型的引用。但是需要加强制类型转换符  
+
+    ```java
+    子类类型  引用名	=	（子类类型）父类引用；
+    Cat cat = (Cat) animal;
+    ```
+
+    向下转型后，可以调用子类类型中所有的成员
+
+    
 
   * 无论是向上转型还是向下转型，前提条件是：两种类型之间必须存在继承关系。这样编译器才能编译通过
 
 * 什么是多态？
 
-  * 父类型引用指向子类对象，Animal a = new Cat(); a.move();
+  * 本质：**父类型引用指向子类对象**，Animal a = new Cat(); a.move();
+  * 前提：两个对象（类）存在继承关系
   * 程序分为编译阶段和运行阶段：
     * 编译阶段：编译器只知道a是Animal类型，因此去Animal类中找move()方法，找到之后，绑定成功，编译通过。这个过程通常被称为静态绑定。
     * 运行阶段：运行时和JVM堆内存中的真实Java对象有关，所以运行时会自动调用真实对象的move()方法。这个过程通常被称为动态绑定。
 
-  * 多态指的是：多种形态，编译阶段一种形态，运行阶段另一种形态，因此叫做多态,面向对象三大特征之一
+  * 多态指的是：多种形态，编译阶段一种形态，运行阶段另一种形态，因此叫做多态，面向对象三大特征之一
 
 * 注意事项：
 
@@ -2254,7 +2252,7 @@ A的cal()被调用
     原因：编译器只知道f是Fu类型，去Fu类中找fun()方法和s属性，结果没有找到，无法完成静态绑定，编译报错。
     ```
 
-    如果就要a去调用fun( )方法，怎么办？
+    如果就要f去调用fun( )方法，怎么办？
 
     ——向下转型
 
@@ -2274,54 +2272,66 @@ A的cal()被调用
     子类特有属性
     ```
 
-  * ```JAVA
-    public class Fu {}
-    public class Zi extends Fu {}
-    public class Nv extends Fu{}
-    ```
-
-    ```
-    Fu f = new Zi();
-    Nv n = (Nv) f;
-    n.fun();//
-    ```
-
+  * 向下转型注意事项
     
-
+    ```java
+    public class TestDuoTai {
+        public static void main(String[] args) {
+            Animal animal = new Cat();
+            Dog dog = (Dog) animal;
+            dog.move();//编译可以通过，但出现运行时异常：java.lang.ClassCastException
+            //在向下转型时，一般建议使用instanceof运算符进行判断来避免ClassCastException的发生
+        }
+    }
+    class Animal{
+        public void move(){
+            System.out.println("动物在叫");
+        }
+    }
+    class Cat extends Animal{
+        @Override
+        public void move() {
+            System.out.println("猫:喵喵喵");
+        }
+    }
+    class Dog extends Animal{
+        @Override
+        public void move() {
+            System.out.println("狗:汪汪汪");
+        }
+    }
+    ```
   
 
-  
+**instanceof运算符的使用**
 
-  
+* 语法格式
 
-  
+  ```java
+  引用 instanceof 类
+  ```
 
-  
+* 作用：判断 左边引用指向的对象类型 是否和 右边类的类型一样，或者是右边类的子类类型，是则返回ture,否则false
 
-**基本介绍：**
+  接续上面示例代码：
 
-方法或对象具有多种形态。是面向对象的第三大特征，多态建立在封装和继承基础之上的。
+  ```java
+  Animal animal = new Cat();
+  animal instanceof Cat // ture; animal指向的对象是Cat类型
+  animal instanceof Animal //ture; animal指向的对象是Cat类型，是Animal的子类类型
+  animal instanceof Dog // false; animal指向的对象是Cat类型不是Dog，且Cat也不是Dog的子类
+  ```
 
-**多态的具体体现：**
+* 注意事项：
 
-1. 方法的多态
+  instanceof 前面的引用编译时的类型要么与后面的类型相同，要么与后面的类型具有父子继承关系
 
-   重写和重载就体现方法的多态
+  ```java
+  Animal animal = new Cat();
+  animal instanceof Person //编译错误 animal编译类型是Animal,与Person类不具有父子继承关系
+  ```
 
-2. 对象的多态
 
-   (1) 一个对象的编译类型和运行类型可以不一致
-
-   (2) 编译类型在定义对象时就确定了不能改变
-
-   (3) 运行类型是可以变化的
-
-   (4) 编译类型看定义时 “=”的左边，运行类型看“=”的右边
-
-   ```java
-   Animal animal = new Dog(); //animal 编译类型是Animal，运行类型是 Dog
-   animal = new Cat(); //animal 编译类型仍然是Animal，运行类型变成 Cat
-   ```
 
 **多态的运行特点**
 
@@ -2333,37 +2343,17 @@ A的cal()被调用
 
 ```java
 Fu f = new Zi()；
+    
 //编译看左边的父类中有没有name这个属性，没有就报错
 //在实际运行的时候，把父类name属性的值打印出来
 System.out.println(f.name);
+
 //编译看左边的父类中有没有show这个方法，没有就报错
 //在实际运行的时候，运行的是子类中的show方法
 f.show();
 ```
 
-**注意事项和细节：**
-
-多态的前提是：两个对象（类）存在继承关系
-
-多态的向上转型：
-
-​		1）本质： 父类的引用指向了子类的对象
-
-​		2）语法：`父类类型（不仅限于直接父类）	引用名	=	new	子类类型（）；`
-
-​		3）特点： 编译类型看左边，运行类型看右边
-
-​							可以调用父类中的所有成员（需遵守访问权限）；不能调用子类中特有成员；最终运行效果看子类的具体实现
-
-多态的向下转型：
-
-​		1）语法：`子类类型	引用名	=	（子类类型）父类引用；`
-
-​		2）只能强转父类的引用，不能强转父类的对象
-
-​		3）要求父类的引用必须原先指向的是当前目标类型的对象
-
-​		4）向下转型后，可以调用子类类型中所有的成员		
+​	
 
 属性没有重写之说！属性的值看编译类型
 
@@ -2371,9 +2361,9 @@ f.show();
 public class PolyDetail {
     public static void main(String[] args) {
         A a = new B();
-        System.out.println(a.n);
+        System.out.println(a.n);//10
         B b = new B();
-        System.out.println(b.n);
+        System.out.println(b.n);//20
     }
 }
 class A {
@@ -2384,18 +2374,7 @@ class B extends A {
 }
 ```
 
-```java
-10
-20
-```
 
-instanceof 比较操作符，用于判断对象的运行类型是否为某某类型或某某类型的子类型
-
-```java
-变量名 instanceof 数据类型 
-如果变量属于该数据类型或者其子类类型，返回true。
-如果变量不属于该数据类型或者其子类类型，返回false。
-```
 
 **Java的动态绑定机制**
 
@@ -2599,7 +2578,7 @@ error
 
 方法定义的形参类型为父类类型，实参类型允许为子类类型
 
-## 9. Object类详解
+## Object类详解
 
 java.lang.Object是所有类的超类。java中所有类都实现了这个类中的方法。
 
@@ -2644,15 +2623,13 @@ java.lang.Object是所有类的超类。java中所有类都实现了这个类中
 
 
 
-## 10. 断点调试（debug）
 
 
 
 
 
 
-
-## static关键字
+## static
 
 static是一个关键字，翻译为：静态的。
 
@@ -2748,7 +2725,7 @@ class A {
 
 
 
-## 2. main方法
+## main方法
 
 ```java
 public static void main(String[] args){ }
@@ -2776,10 +2753,11 @@ public static void main(String[] args){ }
 
 
 
-## 3. 代码块
+## 代码块
 
 * 基本介绍：
-* 代码块又称为初始化块，属于类中的成员（即是类的一部分），类似于方法，将逻辑语句封装在方法体中，通过{ }包围起来，但和方法不同，没有方法名，没有参数，没有返回，只有方法体，而且不用通过对象或类显示调用，而是加载类时，或创建对象时隐式调用
+
+  代码块又称为初始化块，属于类中的成员（即是类的一部分），类似于方法，将逻辑语句封装在方法体中，通过{ }包围起来，但和方法不同，没有方法名，没有参数，没有返回，只有方法体，而且不用通过对象或类显示调用，而是加载类时，或创建对象时隐式调用
 
 * 基本语法：
 
@@ -2791,11 +2769,11 @@ public static void main(String[] args){ }
 
   说明：①修饰符可选，但要写的话只能写 static
 
-  ​			②代码块分为两类，使用static修饰的叫静态代码块，没有static修饰的叫普通代码块/非静态代码块
+  ​	    ②代码块分为两类，使用static修饰的叫静态代码块，没有static修饰的叫普通代码块/非静态代码块
 
-  ​			③逻辑语句可以为任何逻辑语句（输入输出、方法调用、循环、判断...)
+  ​	    ③逻辑语句可以为任何逻辑语句（输入输出、方法调用、循环、判断...)
 
-  ​			④ ；号可以写也可以不写
+  ​	    ④ ；号可以写也可以不写
 
 * 代码块的理解：
   * 相当于另外一种形式的构造器（对构造器的补充机制），可以做初始化的操作
@@ -2803,94 +2781,68 @@ public static void main(String[] args){ }
 
 * 注意事项和使用细节：
 
-  *  static代码块也叫静态代码块，作用是对类进行初始化，而且它随着类的加载而执行，并且**只会执行一次**（类只加载一次）。如果是普通代码块，每创建一个对象就会执行
-  *  静态代码块在类加载时执行，一个类中可以编写多个静态代码块，遵循自上而下的顺序依次执行
-  *  静态代码块代表了类加载时刻，如果你有代码需要在此时刻执行，可以将该代码放到静态代码块中
+  * static代码块也叫静态代码块，作用是对类进行初始化，而且它随着类的加载而执行，并且**只会执行一次**（类只加载一次）。如果是普通代码块，每创建一个对象就会执行
+  
+  * 静态代码块在类加载时执行，一个类中可以编写多个静态代码块，遵循自上而下的顺序依次执行
+  
+  * 静态代码块代表了类加载时刻，如果你有代码需要在此时刻执行，可以将该代码放到静态代码块中
+  
   * 类什么时候被加载？
     * 创建对象实例时（new）
     * 创建子类对象实例，父类也会被加载，而且父类先被加载
     * 使用类的静态成员时（静态属性，静态方法）
-
-  * 类加载早于main方法
-
+  
+  * 静态代码块的执行和静态变量的初始化早于main方法的执行
+  
   * 普通代码块在创建对象实例时会被隐式的调用，被创建一次就会调用一次；
-
+  
     如果只是使用类的静态成员时，普通代码块并不会执行
-
+  
   * 创建一个对象时，执行顺序：
-
+  
+    * 0.非静态变量默认初始化初始化
+  
     * 1.调用静态代码块和静态属性初始化
-
+  
       注：静态代码块和静态属性初始化调用的优先级一样，如果有多个静态代码块和多个静态变量初始化，则按定义顺序调用
-
+  
     * 2.调用普通代码块和普通属性初始化
-
-      注：普通代码块和普通属性初始化调用的优先级一样，如果有多个普通代码块和多个普通变量初始化，则按定义顺序调用
+  
+      注：普通代码块和普通属性初始化（显示初始化）调用的优先级一样，如果有多个普通代码块和多个普通变量初始化，则按定义顺序调用
   
     * 3.调用构造器
-
-  * 构造器的最前面其实隐含了 super() 和调用普通代码块。静态相关的代码块，属性初始化，在类加载时就执行完毕
   
-  * l
+  * 构造器的最前面其实隐含了 super() 和调用普通代码块。super()必须在第一行，故先执行。静态相关的代码块，属性初始化，在类加载时就执行完毕
   
-  * 静态代码块只能直接调用静态成员，普通代码块可以调用任意成员
-  
+  * 静态代码块只能直接调用静态成员，普通代码块可以调用任意成员	 	
   
 
-​	 	
-
-## 4. 单例设计模式
-
-## 5. final 关键字
+## final 
 
 * 基本介绍：
 
   final 可以修饰 类、属性、方法和局部变量
 
-  如下情况会使用到final：
-
-  * 当不希望类被继承时
-  * 当不希望父类的某个方法被子类重写时
-  * 当不希望类的某个属性的值被修改时
-  * 当不希望某个局部变量被修改时
-
 * 注意事项和细节：
 
-  * final修饰的属性又叫常量，一般用XX_XX_XX来命名（如TAX_RATE)
+  * final修饰的类不能被继承，但是可以实例化对象
+  * final修饰的方法不能被覆盖
+  * 如果类不是final类，但是含有final方法，则该方法虽然不能重写，但是可以被继承
+  * 一般来说，如果一个类已经是final类了，就没有必要再将方法修饰成final方法了
+  * final不能修饰构造器
+* final修饰的属性又叫常量，一般用XX_XX_XX来命名（如TAX_RATE)
   * final 修饰的属性在定义时，必须赋初值，并且以后不能再修改，赋值可以在如下位置之一：
     * 定义时，如 public final double TAX_RATE = 0.08 ;
     * 在构造器中
-    * 在代码块中
-
+  * 在代码块中
   * 如果final 修饰的属性是静态的，则初始化的位置只能是
-    * 定义时
+  * 定义时
     * 静态代码块中
-
-  * final类不能被继承，但是可以实例化对象
-
-  * 如果类不是final类，但是含有final方法，则该方法虽然不能重写，但是可以被继承
-
-  * 一般来说，如果一个类已经是final类了，就没有必要再将方法修饰成final方法了
-
-  * final不能修饰构造器
-
+* final修饰的引用，一旦指向某个对象后，不能再指向其它对象。但指向的对象内部的数据是可以修改的
   * final 和 static 往往搭配使用效率更高，不会导致类的加载，因为底层编译器做了优化处理
+* 包装类（Integer,Double,Float,Boolean等）和String都是final类
 
-    ```java
-    
-    ```
-
-  * 包装类（Integer,Double,Float,Boolean等）和String都是final类
-
-​		 
-
-
-
-
-
-
-
-##  6. 抽象类
+##  抽象类
 
 当一个类中存在抽象方法时，需要将该类声明为abstract类
 
@@ -2920,7 +2872,7 @@ abstract class Animal{
   * 如果一个类继承了抽象类，则它必须实现/重写抽象类的**所有**抽象方法，**除非它自己也声明为abstract类**
   * 抽象方法不能使用private、final和static来修饰，因为这些关键字都是和重写相违背
 
-## 7. 接口
+##  接口
 
 * 快速入门：
 
@@ -2992,75 +2944,83 @@ abstract class Animal{
 
 * 基本介绍：
 
-  接口就是给出一些没有实现的方法，封装到一起，到某个类要使用的时候，再根据具体情况把这些方法写出来
+  接口（interface）在Java中表示一种规范或契约，它定义了一组抽象方法和常量，用来描述一些实现这个接口的类应该具有哪些行为和属性。接口和类一样，也是一种引用数据类型。
 
-  语法：
 
-  `interface 接口名{`
+* 语法格式：
 
-  `属性;`
+```java
+interface 接口名{
+    常量;
+    方法;
+}
+```
 
-  `方法;`
 
-  `}`
 
-  ——————————————————————
+注：在JDK7.0前，接口里所有的方法都没有方法体，即都是抽象方法；
 
-  `class 类名 implements 接口{`
+ JDK8.0及以后的版本接口可以有静态方法和默认方法，且必须有方法的具体实现。
 
-  `自己属性;`
+```java
+default public void func(){
+}
+public static void func(){
+}
+```
 
-  `自己方法;`
 
-  `必须实现的接口的抽象方法；`
-
-  `}`
-
-  ——————————————————————
-
-  注：在JDK7.0前，接口里所有的方法都没有方法体，即都是抽象方法；
-
-   JDK8.0及以后的版本接口可以有静态方法和默认方法，且必须有方法的具体实现。
-
-  ```java
-  default public void func(){
-  }
-  public static void func(){
-  }
-  ```
-
-  
 
 
 
 * 注意事项和细节：
-  * 接口不能被实例化
+  * 抽象类是半抽象的，接口是完全抽象的。接口没有构造方法，也无法实例化
   
-  * 接口中所有的方法都是public方法，但不用写public，接口中的抽象方法可以不用abstract修饰
+  * 接口中只能定义：常量+抽象方法。
   
-  * 一个普通类实现接口，就必须将该接口的**所有方法**都实现（alt+enter）
+  * 接口中的常量默认 public static final 修饰符，可以省略，接口中的抽象方法abstract也可以省略
   
-  * 抽象类实现接口，可以不用实现接口的方法
+  * 接口中所有的方法都是public方法，但不用写public
   
-  * 一个类可以同时实现多个接口
-  
-  * 接口中的属性，只能是final的，而且都是默认 public static final 修饰符
-  
-    ```java
-    int n = 10; //等价  public static final int n = 10;
-    ```
-  
-  * 接口中属性的访问形式：接口名.属性名
+  * 类与接口是实现关系（implements），接口与接口是继承关系
   
   * 接口不能继承其他的类，但是可以继承多个别的接口
   
-  * 接口的修饰符只能是 public和默认，这点和类的修饰符是一样的 
+  * 一个类可以同时实现多个接口，语法是：`class 类 implements 接口A,接口B{}`
   
-  * 类与接口是实现关系，接口与接口是继承关系
+  * 一个非抽象的类实现接口必须将接口中所有的抽象方法全部实现
+  
+  * 抽象类实现接口，可以不用实现接口的方法
+  
+  * 接口中属性（常量）的访问形式：接口名.属性名
+  
+  * 接口的修饰符只能是 public 和默认，这点和类的修饰符是一样的 
+  
+  * Java8之后，接口中允许出现默认方法和静态方法(JDK8新特性)
+  
+    * 引入默认方式是为了解决接口演变问题：接口可以定义抽象方法，但是不能实现这些方法。所有实现接口的类都必须实现这些抽象方法。这会导致接口升级的问题：当我们向接口添加或删除一个抽象方法时，这会破坏该接口的所有实现，并且所有该接口的用户都必须修改其代码才能适应更改。这就是所谓的"接口演变"问题。
+  
+    * 引入的静态方法只能使用本接口名来访问，无法使用实现类的类名访问。
+  
+  * JDK9之后允许接口中定义私有的实例方法（为默认方法服务的）和私有的静态方法（为静态方法服务的）。
+  
+  * **所有的接口隐式的继承Object**。因此接口也可以调用Object类的相关方法
+  
+  
+
+**接口与抽象类的异同**
+
+抽象类和接口虽然在代码角度都能达到同样的效果，但适用场景不同：
+
+①抽象类主要适用于公共代码的提取。当多个类中有共同的属性和方法时，为了达到代码的复用，建议为这几个类提取出来一个父类，在该父类中编写公共的代码。如果有一些方法无法在该类中实现，可以延迟到子类中实现。这样的类就应该使用抽象类。
+
+②接口主要用于功能的扩展。例如有很多类，一些类需要这个方法，另外一些类不需要这个方法时，可以将该方法定义到接口中。需要这个方法的类就去实现这个接口，不需要这个方法的就可以不实现这个接口。接口主要规定的是行为。
+
+更多异同点：https://blog.csdn.net/Aure219/article/details/124717184
 
 
 
-## 8. 内部类
+## 内部类
 
 * 基本介绍
 
@@ -3652,9 +3612,7 @@ class User{
   * finally是一个关键字，和try一起使用，finally语句块中的代码一定会执行
   * finalize是一个标识符，它是Object类中的一个方法名
 
-## 8. 方法覆盖与异常
 
-子类继承父类，方法重写之后，不能比父类方法抛出更多的异常，可以更少
 
 
 
