@@ -1308,15 +1308,14 @@ package包机制：
 ### 常用快捷键
 
 ```java
-Ctrl + Y  		//删除当前行
-Ctrl + D 		//复制当前行
+
 Alt + /  		//自动补全代码
 Alt + Enter 	//导入该行需要的类
 Alt + Ins		//生成构造器
-Ctrl + H   		//查看类的层级关系
+
 Ctrl + B		//定位方法
-Ctrl + Alt + L  //格式化代码
-.var 			//自动分配变量名
+
+
 ```
 
 ```
@@ -2582,7 +2581,13 @@ error
 
 java.lang.Object是所有类的超类。java中所有类都实现了这个类中的方法。
 
-### 9.1 equals()方法
+### equals()方法
+
+```java
+public boolean equals(Object obj) {
+    return (this == obj);
+}
+```
 
 * == 和 equals的对比
 
@@ -2596,36 +2601,259 @@ java.lang.Object是所有类的超类。java中所有类都实现了这个类中
 
     默认判断的是地址是否相等，子类中往往重写该方法，用于判断内容是否相等
 
-### 9.2 hashCode()方法
+* 注意：当需要重写equals()时，必须要彻底，当类中关联其他引用类型时，关联的类也要重写
 
-* 总结
-  * 该方法返回的是该对象的哈希码值，可以提高具有哈希结构的容器的效率
-  * 两个引用，如果指向的是同一个对象，则哈希值肯定是一样的
-  * 两个引用，如果指向不同对象，则哈希值是不一样的
-  * 哈希值主要根据地址号来的，但不能完全将哈希值等价于地址
-  * 在集合中，hashCode如果需要的话也会重写
+### hashCode()方法
 
-### 9.3 toString()方法
+```java
+public native int hashCode();
+//这是一个本地方法，底层调用了C++写的动态链接库程序：xxx.dll
+```
+
+* hashCode：返回一个对象的哈希值，通常作为在哈希表中查找该对象的键值
+* Object类的默认实现是根据对象的内存地址生成一个哈希码（即将对象的内存地址转换为整数作为哈希值）
+*  hashCode()方法是为了HashMap、Hashtable、HashSet等集合类进行优化而设置的，以便更快地查找和存储对象
+* 两个引用，如果指向的是同一个对象，则哈希值肯定是一样的
+* 两个引用，如果指向不同对象，则哈希值是不一样的
+* 哈希值主要根据地址号来的，但不能完全将哈希值等价于地址
+* 在集合中，hashCode如果需要的话也会重写
+
+### toString()方法
+
+```java
+public String toString() {
+	return getClass().getName() + "@" + Integer.toHexString(hashCode());
+}
+```
+
+* 这个方法的作用是：将java对象转换成字符串的表示形式
 
 * 默认返回：全类名+@+哈希值的十六进制
+
 * 通常重写toString方法，输出对象的属性（alt+insert -> toString）
-* 当打印输出一个引用时，会自动调用"`引用.toString()`"
 
-### 9.4 finalize()方法
+* 当println()输出的是一个引用的时候，会自动调用“引用.toString()”，并且会避免空指针异常，
 
-* 当对象被回收时，系统自动调用该对象的finalize方法。子类可以重写该方法，做一些释放资源的操作
+  而直接使用println(引用.toString())时如果为null会报空指针异常
+
+### finalize()方法
+
+```java
+protected void finalize() throws Throwable { }
+//从Java9开始，这个方法被标记已过时，不建议使用。作为了解。
+```
+
+* 当对象被回收时，系统（GC）自动调用该对象的finalize方法。子类可以重写该方法，做一些释放资源的操作
 * 当某个对象没有任何引用时，则jvm就认为这个对象是一个垃圾对象，会使用垃圾回收机制来销毁该对象，在销毁对象前，会先调用finalize方法
 * 垃圾回收机制的调用，是由系统来决定的（即有自己的GC算法），也可以通过System.gc()主动触发垃圾回收机制
 
+### clone()方法
+
+```java
+/**
+ * 关于Object类中的clone()方法：
+ *
+ * 1. clone方法作用：对象拷贝。通常在开发中需要保护原对象数据结构。通常复制一份，生成一个新对象，对新对象进行操作。
+ *
+ * 2. Object类中的默认实现：
+ *      protected native Object clone() throws CloneNotSupportedException;
+ *      受保护的方法，专门给子类使用的。
+ *      本地方法。
+ *      底层调用C++程序已经可以完成对象的创建了。
+ *      我们现在要解决的问题是：怎么调用这个方法。
+ *
+ * 3. 怎么解决clone()方法的调用问题？
+ *      在子类中重写该clone()方法。
+ *      为了保证clone()方法在任何位置都可以调用，建议将其修饰符修改为：public
+ *
+ * 4. 凡是参加克隆的对象，必须实现一个标志接口：java.lang.Cloneable
+ *      java中接口包括两大类：
+ *          一类是：起到标志的作用，标志型接口。
+ *          另一类是：普通接口。
+ */
+public class UserTest {
+    public static void main(String[] args) throws CloneNotSupportedException {
+        // 创建User对象
+        User user = new User(20);
 
 
+        // 克隆一个user对象
+        // 报错原因：因为Object类中的clone()方法是protected修饰的。
+        // protected修饰的只能在：本类，同包，子类中访问。
+        // 但是以下这行代码不满足以上所说条件。
+        // 这是一种浅克隆/浅拷贝。
+        Object obj = user.clone();
 
 
+        // 修改克隆之后的对象的age属性
+        User copyUser = (User) obj;
+        copyUser.setAge(100);
+        System.out.println("克隆之后的新对象的年龄：" + copyUser.getAge());//100
 
+        System.out.println("原始对象的年龄：" + user.getAge());//20
 
+    }
+}
+class User implements Cloneable{
+    private int age;
 
+    public User() {
+    }
 
+    public User(int age) {
+        this.age = age;
+    }
 
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "age=" + age +
+                '}';
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+}
+```
+
+**浅克隆与深克隆**
+
+两者区别：浅克隆不会克隆原对象中的引用类型，仅仅拷贝了引用类型的指向。深克隆则拷贝了所有。也就是说深克隆能够做到原对象和新对象之间完全没有影响。
+
+浅克隆：
+
+```java
+public class Address {
+    private String city;
+    private String street;
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "city='" + city + '\'' +
+                ", street='" + street + '\'' +
+                '}';
+    }
+
+    public Address() {
+    }
+
+    public Address(String city, String street) {
+        this.city = city;
+        this.street = street;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getStreet() {
+        return street;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
+    }
+}
+```
+
+```java
+public class User implements Cloneable{
+    private String name;
+    private Address addr;
+
+    public User() {
+    }
+
+    public User(String name, Address addr) {
+        this.name = name;
+        this.addr = addr;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Address getAddr() {
+        return addr;
+    }
+
+    public void setAddr(Address addr) {
+        this.addr = addr;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", addr=" + addr +
+                '}';
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+}
+```
+
+![f202ed0abb3e1e6419b73f3d13ffceb](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407222248022.png)
+
+深克隆：
+
+与浅克隆不同的是，深克隆不仅要克隆单个对象本身，该对象相关联的所有对象都克隆，如此修改克隆对象的属性时不会影响到原对象
+
+具体实现：关联的类（Address）也要重写clone方法，User的clone方法也要改写法
+
+```java
+public class Address implements Cloneable{
+    
+	...
+        
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+	}
+	...
+	
+}
+```
+
+```java
+public class User implements Cloneable{
+    
+	...
+        
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        // 重写方法，让其达到深克隆的效果。
+        // User要克隆，User对象关联的Address对象也需要克隆一份。
+        Address copyAddr = (Address)this.getAddr().clone();
+
+        User copyUser = (User)super.clone();
+        copyUser.setAddr(copyAddr);
+        return copyUser;
+    }
+}
+```
 
 
 
