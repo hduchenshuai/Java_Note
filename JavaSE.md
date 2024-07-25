@@ -3951,39 +3951,123 @@ Boolean(String s)
 
 
 
-* **包装类和基本数据类型的转换**
+**Integer的常用方法**
 
-  * jdk5前是手动装箱和拆箱方式，装箱：基本类型一>包装类型，反之就是拆箱
-  * jdk5及以后都是自动装箱和拆箱方式
-  * 自动装箱底层调用的是valueOf方法，比如Integer.valueOf()
-
-  ```java
-  public class wrapper02 {
-      public static void main(String[] args) {
-          //手动装箱 int->Integer
-          int n1 = 10;
-          Integer integer = new Integer(n1);//方式一
-          Integer integer01 = Integer.valueOf(n1);//方式二
-  
-          //手动拆箱 Integer->int
-          int i = integer.intValue();
-  
-          //自动装箱 int->Integer
-          int n2 =20;
-          Integer integer02 = n2;//底层使用的是Integer.valueOf(n2)
-          //自动拆箱 Integer->int
-          int n3 = integer02;//底层使用的是intValue()方法
-      }
-  }
-  ```
-
-  
-
-* **包装类型与String类型的相互转化**
+| 方法                                  | 说明                                                         |
+| ------------------------------------- | ------------------------------------------------------------ |
+| static int compare(int x, int y)      | 比较大小                                                     |
+| static int max(int a, int b)          | 最大值                                                       |
+| static int min(int a, int b)          | 最小值                                                       |
+| **static int parseInt(String s) **    | **将字符串数字转换成数字类型。其它包装类也有这个方法：Double.parseDouble(String s)** |
+| static String toBinaryString(int i)   | 获取数字二进制的字符串表示形式                               |
+| static String toHexString(int i)      | 获取数字十六进制的字符串表示形式                             |
+| static String toOctalString(int i)    | 获取数字八进制的字符串表示形式                               |
+| int compareTo(Integer anotherInteger) | 比较大小，可见实现了Comparable接口                           |
+| boolean equals(Object obj)            | 包装类已经重写了equals()方法                                 |
+| String toString();                    | 包装类已经重写了toString()方法                               |
+| int intValue()                        | 将包装类拆箱为基本数据类型                                   |
+| static String toString(int i)         | 将基本数据类型转换成字符串                                   |
+| static Integer valueOf(int i)         | 将基本数据类型转换成Integer                                  |
+| static Integer valueOf(String s)      | 将字符串转换成Integer（这个字符串必须是数字字符串才行，不然出现NumberFormatException） |
 
 ```java
-//以Integer和 String转换为例，其他类似
-public class Wrapper01 {
+public class Test {
+
+    @Test
+    public void testBoxing(){
+        Integer i1 = Integer.valueOf(100);
+        System.out.println(i1);//100
+
+        Integer i2 = Integer.valueOf("100");
+        System.out.println(i2);//100
+
+        // 注意：java.lang.NumberFormatException
+        //Integer i3 = Integer.valueOf("abc");
+    }
+
+    @Test
+    public void testToString(){
+        // 将基本数据类型转换成String
+        String str = Integer.toString(100);
+        System.out.println(str);//100
+
+        // 这种方式也行。
+        int i = 100;
+        String s = i + "";
+        System.out.println(s);//100
+    }
+
+    @Test
+    public void testUnBoxing(){
+        // 装箱
+        Integer i = new Integer(100);
+        // 拆箱
+        int num = i.intValue();
+        System.out.println(num + 1);//101
+    }
+    @Test
+    public void testEqualsAndToString(){
+        // Integer以及其它的包装类都已经将equals和toString重写了。
+        Integer a = new Integer(100);
+        Integer b = new Integer(100);
+        System.out.println(a == b); // false
+        System.out.println(a.equals(b)); // true
+
+        System.out.println(a.toString()); // 100
+        System.out.println(b.toString()); // 100
+    }
+
+    @Test
+    public void testToJinZhi(){
+        int num = 20;
+        System.out.println(num + "对应的十六进制" + Integer.toHexString(num));//20对应的十六进制14
+        System.out.println(num + "对应的二进制" + Integer.toBinaryString(num));//20对应的二进制10100
+        System.out.println(num + "对应的八进制" + Integer.toOctalString(num));//20对应的八进制24
+    }
+
+    @Test
+    public void testParseInt(){
+        // 注意避免这个异常：java.lang.NumberFormatException
+        //int num1 = Integer.parseInt("123a");
+        int num1 = Integer.parseInt("123");
+
+        double num2 = Double.parseDouble("3.14");
+
+        long num3 = Long.parseLong("560");
+
+        System.out.println(num1 + 1);//124
+        System.out.println(num2 + 1);//4.140000000000001
+        System.out.println(num3 + 1);//561
+    }
+
+    @Test
+    public void testMaxAndMin(){
+        System.out.println(Integer.max(10, 20));//20
+        System.out.println(Integer.min(10, 20));//10
+    }
+
+    @Test
+    public void testCompare(){
+        int result = Integer.compare(30, 20);
+        int result1 = Integer.compare(10, 20);
+        int result2 = Integer.compare(20, 20);
+        System.out.println(result);//1
+        System.out.println(result1);//-1
+        System.out.println(result2);//0
+    }
+}
+```
+
+
+
+**String、int、Integer三种类型之间的互相转换**（String,double,Double转换原理相同）
+
+![image-20240725231120659](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407252311949.png)
+
+
+
+```java
+public class Wrapper {
     public static void main(String[] args) {
         //包装类(Integer)->String
         Integer i = 100;
@@ -4005,6 +4089,78 @@ public class Wrapper01 {
     }
 }
 ```
+
+
+
+**自动装箱和自动拆箱**
+
+```java
+/**
+ * 关于自动装箱和自动拆箱
+ *      1. Java5的新特性。
+ *      2. 自动装箱和自动拆箱属于编译阶段的功能。
+ *      3. 自动装箱：auto boxing
+ *      4. 自动拆箱：auto unboxing
+ *      5. 自动装箱和自动拆箱机制是为了方便写代码而存在的机制。
+ *      6. 装箱：Integer i = new Integer(100);
+ *      7. 拆箱：int num = i.intValue();
+ */
+public class IntegerTest {
+    public static void m1(Integer i){
+        // 发生自动拆箱
+        // 注意空指针异常。（注意排除空引用）
+        if (i != null) {
+            System.out.println(i + 1);
+        }
+    }
+
+    public static void main(String[] args) {
+
+        // 这个过程其实就发生了自动装箱。
+        m1(10000);
+        m1(null);
+
+        // 自动装箱
+        Integer x = 1000; // 程序在编译的时候底层实际上的代码是：Integer x = new Integer(1000);
+
+        /*
+        Integer a = 10000;
+        Integer b = 10000;
+        System.out.println(a == b); // false（堆当中两个Integer对象，内存地址不同。）*/
+
+        // 自动拆箱
+        int num = x; // 底层实际上会调用：int num = x.intValue();
+
+        // 注意空指针：java.lang.NullPointerException
+        /*
+        x = null;
+        int num2 = x; // int num2 = x.intValue();*/
+
+    }
+}
+```
+
+```java
+public class wrapper {
+    public static void main(String[] args) {
+        //手动装箱 int->Integer
+        int n1 = 10;
+        Integer integer = new Integer(n1);//方式一
+        Integer integer01 = Integer.valueOf(n1);//方式二
+
+        //手动拆箱 Integer->int
+        int i = integer.intValue();
+
+        //自动装箱 int->Integer
+        int n2 =20;
+        Integer integer02 = n2;
+        //自动拆箱 Integer->int
+        int n3 = integer02;
+    }
+}
+```
+
+
 
 ## Arrays
 
