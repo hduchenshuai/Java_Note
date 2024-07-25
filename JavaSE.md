@@ -3892,6 +3892,65 @@ class User{
 
 
 
+包装类中的6个数字类型都继承了Number类
+
+Byte、Short、Integer、Long、Float、Double都继承了Number类，因此这些类中都有以下这些方法：
+
+byteValue()
+
+shortValue()
+
+intValue()
+
+longValue()
+
+floatValue()
+
+doubleValue()
+
+这些方法的作用就是将包装类型的数据转换为基本数据类型。
+
+包装类转换成基本数据类型的过程我们称为：拆箱 unboxing
+
+Boolean的拆箱方法：booleanValue();
+
+Character的拆箱方法：charValue();
+
+
+
+**Integer的常量**
+
+* 通过Integer提供的常量可以获取int的最大值和最小值：
+  * 最大值：Integer.MAX_VALUE
+  * 最小值：Integer.MIN_VALUE
+
+* 当然，其它5个数字包装类也有对应的常量：
+  * byte最大值：Byte.MAX_VALUE
+  * byte最小值：Byte.MIN_VALUE
+  * short最大值：Short.MAX_VALUE
+  * short最小值：Short.MIN_VALUE
+  * ......
+
+**Integer的构造方法**
+
+* Integer(int value)
+  * Java9之后标记已过时，不建议使用。
+  * 该构造方法可以将基本数据类型转换成包装类。这个过程我们称为装箱boxing
+
+* Integer(String s)
+  * Java9之后标记已过时，不建议使用。
+  * 该构造方法可以将字符串数字转换成包装类。但字符串必须是整数数字，如果不是会出现异常：NumberFormatException
+
+其它包装类的构造方法也是如此，例如Boolean的构造方法
+
+Boolean(boolean value)
+
+Boolean(String s)
+
+以上两个构造方法也都在Java9的时候标记已过时。
+
+
+
 * **包装类和基本数据类型的转换**
 
   * jdk5前是手动装箱和拆箱方式，装箱：基本类型一>包装类型，反之就是拆箱
