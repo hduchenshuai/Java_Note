@@ -3511,11 +3511,196 @@ public class InnerClassDemo01 {
 
 
 
-# 枚举和注解
+# 枚举
 
-## 1. 枚举的两种实现方式
+枚举类型在Java中是一种引用数据类型。
 
-**（1）自定义类实现枚举**
+合理使用枚举类型可以让代码更加清晰、可读性更高，可以有效地避免一些常见的错误。
+
+什么情况下考虑使用枚举类型？
+
+* 这个数据是有限的，并且可以一枚一枚列举出来的。
+* 枚举类型是类型安全的，它可以有效地防止使用错误的类型进行赋值。
+
+枚举如何定义？以下是最基本的格式：
+
+```java
+enum 枚举类型名 {
+枚举值1, 枚举值2, 枚举值3, 枚举值4}
+```
+
+通过反编译(javap)可以看到：
+
+* 所有枚举类型默认继承java.lang.Enum,因此枚举类型无法继承其他类。
+
+* 所有的枚举类型都被final修饰，所以枚举类型是无法继承的
+
+* 所有的枚举值都是常量
+
+* 所有的枚举类型中都有一个values数组（可以通过values()获取所有枚举值并遍历）
+
+  ```java
+  enum Color {
+      BLUE, GREEN, RED
+  }
+  
+  public class EnumTest {
+      public static void main(String[] args) {
+  
+          // 获取所有的枚举值，遍历
+          Color[] colors = Color.values();
+  
+          for(Color color : colors){
+              System.out.println(color);//BLUE
+                                        //GREEN
+                                        //RED
+          }
+      }
+  }
+  ```
+
+**枚举的高级用法**
+
+* 普通类中可以编写的元素，枚举类型中也可以编写:
+  * 静态代码块，构造代码块
+  * 实例方法，静态方法
+  * 实例变量，静态变量
+
+* 枚举类中的构造方法是私有化的（默认就是私有化的，只能在本类中调用）
+  * 构造方法调用时不能用new,直接使用“枚举值(实参);”调用
+  * 每一个枚举值相当于枚举类型的实例
+
+* 枚举类型中如果编写了其他代码，必须要有枚举值，且枚举值的定义要放到最上面，最后一个枚举值的分号不能省略
+* 枚举类因为默认继承了java.lang.Enum，因此不能再继承其他类，但可以实现接口
+  * 第一种实现方式：在枚举类中实现
+  * 第二种实现方式：让每一个枚举值实现接口
+
+```java
+public interface Eatable {
+    void eat();
+}
+```
+
+```java
+public enum Season implements Eatable{
+
+    // 定义了有参数的构造方法之后
+    // 通过以下代码来调用构造方法
+    // 注意枚举类的构造方法不能使用new来调用
+    // 并且枚举类的构造方法只能在本类中调用
+    SPRING("春季", "春意盎然"){
+        @Override
+        public void eat(){
+            System.out.println("春季吃苹果");
+        }
+    },
+    SUMMER("夏季", "天太闷热"){
+        @Override
+        public void eat(){
+            System.out.println("夏季吃西瓜");
+        }
+    },
+    AUTUMN("秋季", "秋高气爽"){
+        @Override
+        public void eat(){
+            System.out.println("秋季吃苹果");
+        }
+    },
+    WINTER("冬季", "白雪皑皑"){
+        @Override
+        public void eat(){
+            System.out.println("冬季吃苹果");
+        }
+    };
+ /*
+实际上枚举值可以看作如下定义：
+public final static Season SPRING = new Season("春天", "春意盎然"); 
+只不过简化为SPRING("春天", "春意盎然")
+如果使用无参构造器创建枚举对象，则实参列表和小括号都可以省略
+*/
+
+    // 提供属性
+    private final String name;
+    private final String desc;
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    // 对于枚举类型来说，里面可以定义什么呢？普通类中可以定义的，枚举类型也可以。
+    // 静态代码块 构造代码块
+    // 静态方法，实例方法
+    // 静态变量，实例变量
+
+    /*// 静态代码块
+    static {
+        System.out.println("枚举类型Season的静态代码块执行了");
+    }
+
+    // 构造代码块
+    {
+        System.out.println("构造代码块执行了");
+    }
+
+    // 静态变量
+    public final static int A = 10;
+    // 实例变量
+    private final int b = 20;
+    // 静态方法
+    public static int getA(){
+        return A;
+    }
+    // 实例方法
+    public int getB(){
+        return b;
+    }*/
+
+    // 枚举类型也可以定义构造方法
+    // 构造方法是私有的。
+    Season(String name, String desc) {
+        this.name = name;
+        this.desc = desc;
+    }
+
+    /*@Override
+    public void eat(){
+        System.out.println("吃啥都行！");
+    }*/
+}
+```
+
+```java
+public class SeasonTest {
+    public static void main(String[] args) {
+        Season season = get();
+        switch (season) {
+            case SPRING -> System.out.println(Season.SPRING.getDesc());
+           case SUMMER -> System.out.println(Season.SUMMER.getDesc());//此处执行，输出：天太闷热
+            case AUTUMN -> System.out.println(Season.AUTUMN.getDesc());
+            case WINTER -> System.out.println(Season.WINTER.getDesc());
+        }
+
+        // 遍历
+        Season[] seasons = Season.values();
+        for(Season s : seasons){
+            System.out.println(s.getName() + "-->" + s.getDesc());
+            s.eat();
+        }
+    }
+
+    public static Season get(){
+        return Season.SUMMER;
+    }
+}
+```
+
+
+
+**自定义类实现枚举**
 
 * 构造器私有化
 * 类内部创建一组对象
@@ -3571,35 +3756,15 @@ class Season {
 
 
 
-**（2）使用enum关键字实现枚举**
+**enum常用方法**
 
-```java
-enum Season {
-    SPRING("春天", "温暖"),SUMMER("夏天", "炎热"),AUTUMN("秋天", "凉爽"),WINTER("冬天", "寒冷");
-    private String name;
-    private String desc;
-    ...
-}
-```
 
-注意事项：
-
-* 当使用enum关键字开发一个枚举类时，默认会继承Enum类，而且是一个final类
-
-![0fd41338e8cc454965103cbb4be765d](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031630026.png)
-
-* 传统的 `public final static Season SPRING = new Season("春天", "温暖");` 简化为`SPRING("春天", "温暖")` 
-* 如果使用无参构造器创建枚举对象，则实参列表和小括号都可以省略
-* 当有多个枚举对象时，使用逗号分隔，最后用一个分号结尾
-* 枚举对象必须放在枚举类的行首
-
-## 2. enum常用方法
 
 <img src="https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031630639.png" alt="4df721006371caf9c178e0b5b827fb5" style="zoom:150%;" />
 
 
 
-## 3. 注解
+# 注解
 
 注解（Annotation）也被称为元数据（Metadata），用于修饰解释包、类、方法、属性、构造器、局部变量等数据信息
 
@@ -4517,7 +4682,7 @@ String 类代表字符串，Java 程序中的所有字符串文字（例如“ab
   | --------------------------------------------------- | ------------------------------------------------------------ |
   | public String()                                     | 创建一个空白字符串对象，不含有任何内容                       |
   | public String(char[] value)                         | 根据字符数组创建一个新的字符串对象                           |
-  | public String(char[] value, int offset, int  count) | 根据字符数组的指定部分创建一个新的字符串对象                 |
+  | public String(char[] value, int offset, int count)  | 根据字符数组的指定部分创建一个新的字符串对象                 |
   | public String(byte[] bytes)                         | 根据字节数组创建一个新的字符串对象，默认使用平台默认的字符集进行解码 |
   | public String(byte[] bytes, int offset, int length) | 根据字节数组的指定部分创建一个新的字符串对象，默认使用平台默认的字符集进行解码 |
   | public String(byte[] bytes, String charsetName)     | 根据字节数组和指定的字符集名称创建一个新的字符串对象         |
@@ -4663,7 +4828,7 @@ public class StringExam {
         String s1 = "a";
         // 字符串常量池中1个 ，堆1个。
         String s2 = new String("b");
-        // 堆中2个。（StringBuilder对象，String对象）
+        // 堆中2个。（拼接时创建一个StringBuilder对象，再创建一个String对象接收拼接后的字符串）
         String s3 = s1 + s2;
     }
 
@@ -4740,44 +4905,182 @@ public class StringExam {
 
 ### StringBuilder和StringBuffer
 
-当我们在拼接字符串和反转字符串的时候会使用到
+StringBuffer和StringBuilder：可变长度字符串
 
-![322501839a59faafbef0347662a1c70](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631988.png)
+* 这两个类是专门为频繁进行字符串拼接而准备。
 
-![f4e3f6184dbca97283b2ded6fa080b9](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631485.png)
+- StringBuffer先出现的，Java5的时候新增了StringBuilder。**StringBuffer是线程安全的**。在不需要考虑线程安全问题的情况下优先选择StringBuilder，效率较高一些。
 
-![864e6606ca5b6acfdcc04d5283b5133](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631406.png)
+- 底层是 byte[] 数组，并且这个 byte[] 数组没有被final修饰，这说明如果byte[]数组满了，可以创建一个更大的新数组来达到扩容，然后它可以重新指向这个新的数组对象。
 
-* 基本使用
+- 扩容原理：
+
+  1、无参调用时，字符串默认初始容量为16.
+
+  2、 a、当添加字符串不超过容量时，容量不发生变化，长度为字符串长度。
+
+  ​       b、当添加字符串超过容量时，容量发生变化，计算公式为：
+
+  ​             添加后容量=当前容量*2+2
+
+  ​             适用于添加字符串长度+加上本身长度< 当前容量*2+2 的情况；
+
+  ​       c、当添加的字符串超过 当前容量*2+2 时：
+
+  ​             添加后容量=字符串长度+当前容量
+
+  3、StringBuilder存储对象，说白了就是底层了byte数组在进行存储。
+
+  我们在实际应用中应当避免StringBuilder频繁的扩容，节约资源，如果将来有需要使用StringBuilder方法添加字符串，且不知道添加多少时，可以使用StringBuilder(int capacity)方法构建一个没有字符的初始容量为capacity的字符串构造器，避免资源浪费。
+
+  
+
+StringBuffer、StringBuilder、String 中都实现了 CharSequence 接口。CharSequence 是一个定义字符串操作的接口，它只包括 length()、charAt(int index)、subSequence(int start, int end) 这几个 API。
+
+StringBuffer、StringBuilder、String 对 CharSequence 接口的实现过程不一样，如下图所示：
+
+　　![img](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407261548505.png)
+
+ 
+
+可见，String 直接实现了 CharSequence 接口，StringBuilder 和 StringBuffer 都是可变的字符序列，它们都继承于 AbstractStringBuilder，实现了 CharSequence 接口
+
+
+
+**StringBuffer和StringBuilder构造方法**
+
+| 构造方法名                      | 说明                                                         |
+| ------------------------------- | ------------------------------------------------------------ |
+| String Builder()                | 构造一个字符串生成器，其中不包含任何字符，初始容量为16个字符。 |
+| String Builder (int capacity)   | 构造一个字符串生成器，其中不包含任何字符，并且具有由容量参数指定的初始容量。 |
+| String Builder(String str)      | 构造初始化为指定字符串内容的字符串生成器                     |
+| StringBuilder(CharSequence seq) | 接收CharSequence                                             |
+
+**StringBuffer和StringBuilder常用方法**
+
+| 方法名                                                | 说明                                               |
+| ----------------------------------------------------- | -------------------------------------------------- |
+| StringBuilder append(Type data)                       | Type为任意类型，添加数据，并返回对象本身           |
+| StringBuilder deleteCharAt(int index)                 | 删除指定索引的字符，并返回对象本身                 |
+| StringBuilder delete(int start, int end)              | 删除指定索引区间（左闭右开）的字符，并返回对象本身 |
+| StringBuilder insert(int offset, String str)          | 指定位置插入字符串                                 |
+| StringBuilder replace(int start, int end, String str) | 将指定索引区间（左闭右开）的字符由str替代          |
+| StringBuilder reverse()                               | 反转字符                                           |
+| void setCharAt(int index, char ch)                    | 将指定索引位置的字符设为传入的ch                   |
+| void setLength(int newLength)                         | 设置长度                                           |
+
+同String,也有以下常用方法：
+
+char charAt(int index);
+
+int indexOf(String str);
+
+int indexOf(String str, int fromIndex);
+
+int lastIndexOf(String str);
+
+int lastIndexOf(String str, int fromIndex);
+
+int length();
+
+String substring(int start);
+
+String substring(int start, int end);
+
+String toString();
 
 ```java
-public class StringBuilderDemo3 {
-    public static void main(String[] args) {
-        //1.创建对象
-        StringBuilder sb = new StringBuilder("abc");
+/**
+ * 测试java.lang.StringBuilder的相关方法
+ */
+public class StringBuilderTest {
 
-        //2.添加元素
-        sb.append(1);
-        sb.append(2.3);
-        sb.append(true);//打印输出：abc12.3true
+    @Test
+    public void testAppend(){
+        StringBuilder s = new StringBuilder();
+        s.append(10);
+        s.append("abc");
+        s.append(new Object());
+        s.append(false);
+        s.append(3.14);
 
-        //反转
-        sb.reverse();//打印输出：cba
+        System.out.println(s.toString());//10abcjava.lang.Object@442675e1false3.14
+        System.out.println(s);//同上
+    }
+    
+    @Test
+    public void testDelete(){
+        StringBuilder s = new StringBuilder();
+        s.append(10);
+        s.append("abc");
+        s.append(new Object());
+        s.append(false);
+        s.append(3.14);
+        System.out.println(s);//10alang.Object@442675e1false3.14
+        // [3 , 10)
+        s.delete(3,10);
+        System.out.println(s);//10alang.Object@442675e1false3.14
 
-        //获取长度
-        int len = sb.length();
-        System.out.println(len);//输出：3
+        s.deleteCharAt(0);
+        System.out.println(s);//0alang.Object@442675e1false3.14
+    }
+    
+    @Test
+    public void testInsert(){
+        StringBuilder s = new StringBuilder();
+        s.append(10);
+        s.append("abc");
+        s.insert(3, "hello world");
+        System.out.println(s);//10ahello worldbc
+    }
+    
+    @Test
+    public void testReplace(){
+        StringBuilder s = new StringBuilder();
+        s.append(10);
+        s.append("abc");
+        s.insert(3, "hello world");
+        System.out.println(s);//10ahello worldbc
 
+        s.replace(3, "hello world".length() + 3, "动力节点");
+        System.out.println(s);//10a动力节点bc
+    }
+    
+    @Test
+    public void testReverse(){
+        StringBuilder s = new StringBuilder();
+        s.append(10);
+        s.append("abc");
+        s.insert(3, "hello world");
+        System.out.println(s);//10ahello worldbc
+        s.replace(3, "hello world".length() + 3, "动力节点");
+        System.out.println(s);//10a动力节点bc
+        s.reverse();
+        System.out.println(s);//cb点节力动a01
+    }
+    
+    @Test
+    public void testSetCharAt(){
+        StringBuilder s = new StringBuilder();
+        s.append(10);
+        s.setCharAt(0, 'A');
+        System.out.println(s);//A0
+    }
+    
+    @Test
+    public void testSetLength(){
+        StringBuilder s = new StringBuilder();
+        s.append("aaa111111111111111111111111111111111111111111111111111111");
+        System.out.println(s);//aaa111111111111111111111111111111111111111111111111111111
 
-        //打印
-        //普及：
-        //因为StringBuilder是Java已经写好的类
-        //java在底层对他做了一些特殊处理。
-        //打印对象不是地址值而是属性值。
-        System.out.println(sb);
+        // 谨慎使用，会把已有的数据抹掉。
+        s.setLength(3);
+        System.out.println(s);//aaa
     }
 }
 ```
+
+
 
 ### 链式编程
 
@@ -4801,7 +5104,7 @@ public class StringBuilderDemo4 {
 }
 ```
 
-![903ba64f5e61056d77bc219e46f2af2](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407031631570.png)
+
 
 ## Math
 
