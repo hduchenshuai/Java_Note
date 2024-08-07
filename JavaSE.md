@@ -5793,17 +5793,43 @@ UUID具有以下特点：
 
 # 集合
 
-## 集合体系结构
+## 集合概述
 
-* 集合主要分两组：**单列集合**（Collection）和双列集合（Map）
-
+* 集合是一种容器，用来组织和管理数据的。Java的集合框架对应的这套类库其实就是对各种数据结构的实现
+* 集合中存储的是引用，不是把堆中的对象存储到集合中，是把对象的地址存储到集合中。
+* 默认情况下，**如果不使用泛型的话**，集合中可以存储任何类型的引用，只要是Object的子类都可以存储
+* Java集合框架相关的类都在 java.util 包下
 * **集合与数组的对比：**
   * 数组长度固定；集合长度可变
   * 数组可以存储基本类型和引用类型；集合只能存储引用类型，基本类型要转成包装类
 
+## 集合体系结构
+
+* 集合主要分两组：
+
+  * 单列集合（Collection）：元素以单个形式存储
+
+  * 双列集合（Map）：元素以键值对的映射关系存储
+
 
 
 ## 单列集合
+
+### 体系结构图
+
+![image-20240807144221383](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408071442843.png)
+
+注：
+
+* SequencedCollection和SequencedSet接口都是Java21新增的接口
+* 有色的是实现类。其它的都是接口
+* 实现类中只有HashSet是无序集合。剩下的都是有序集合
+  * 有序集合：集合中存储的元素有下标**或者**集合中存储的元素是可排序的。
+  * 无序集合：集合中存储的元素没有下标**并且**集合中存储的元素也没有排序。
+
+* List集合中存储的元素可重复。Set集合中存储的元素不可重复。
+
+
 
 List系列集合：添加的元素是有序、可重复、有索引
 
@@ -5815,49 +5841,82 @@ Set系列集合：添加的元素是无序、不重复、无索引
 
 #### 常用方法
 
-![2b97ce0b9cb35dade82f513dd5b5402](javanote01.assets/2b97ce0b9cb35dade82f513dd5b5402.png)
+| 方法                          | 说明                                   |
+| ----------------------------- | -------------------------------------- |
+| boolean add(E e);             | 向集合中添加元素                       |
+| int size();                   | 获取集合中元素个数                     |
+| boolean isEmpty();            | 判断集合中元素个数是否为0              |
+| boolean contains(Object o);   | 判断集合中是否包含对象o                |
+| Object[] toArray();           | 将集合转换成一维数组                   |
+| boolean remove(Object o);     | 从集合中删除对象o                      |
+| boolean addAll(Collection c); | 将参数集合中所有元素全部加入当前集合   |
+| void clear();                 | 清空集合                               |
+| Iterator<E> iterator();       | 方法继承自Iterable接口，获取迭代器对象 |
 
 ps:
 
 * Collection方法集成了Set和List，故操作对象都是元素，无索引操作
-
-* add( )方法中，如果往List系列集合添加元素，方法永远返回true
-
-  ​						如果往Set系列集合添加元素，若要添加元素不存在，方法返回true
-
-  ​																		  若要添加元素已经存在，方法返回false
-
+* add( )方法中：
+  * 如果往List系列集合添加元素，方法永远返回true
+  * 如果往Set系列集合添加元素，若要添加元素不存在，方法返回true；若要添加元素已经存在，方法返回false
 * remove( )方法中，删除成功，则返回true；删除失败，则返回false，元素不存在就会删除失败
 * contains( )方法中，底层是依赖equals方法进行判断是否存在的，所以，如果集合中存储的是自定义对象，也想通过contains方法来判断是否包含，那么在自定义类中一定要重写equals方法，重写后的方法是根据对象属性来判断；如果没有重写equals方法，则默认使用Object类中的equals方法进行判断，默认equals方法是依赖地址值进行判断，无意义
 
-#### Collection集合的遍历
+#### Collection的遍历
 
-1. 迭代器遍历
+##### 迭代器遍历
 
-![96387c6f4af696726cb7761785fefe5](javanote01.assets/96387c6f4af696726cb7761785fefe5.png)
+Iterator接口的常用方法：
 
-![c9dd179a2f9a657b748c0232c15358e](javanote01.assets/c9dd179a2f9a657b748c0232c15358e.png)
+| 方法               | 说明                                           |
+| ------------------ | ---------------------------------------------- |
+| boolean hasNext(); | 判断光标指向位置是否有元素                     |
+| E next();          | 先返回光标指向位置的元素，再将光标向下移动一位 |
+| void remove()      | 删除元素                                       |
 
-注：集合对象调用iterator()方法
 
-![a225a605abdf2457979f9528dc025fe](javanote01.assets/a225a605abdf2457979f9528dc025fe.png)
-
-2. 增强 for 遍历
-
-   循环内不会改变集合内元素
-
-![6fd92926d43245655f056a81539530b](javanote01.assets/6fd92926d43245655f056a81539530b.png)
-
-3. Lambda 表达式遍历
-
-![622c6339a0f91f4dd88ef25353cd895](javanote01.assets/622c6339a0f91f4dd88ef25353cd895.png)
 
 ```java
-public class A07_CollectionDemo7 {
+第一步：获取集合依赖的迭代器对象
+Iterator it = collection.iterator();
+
+第二步：判断当前光标指向的位置是否存在元素
+boolean has = it.hasNext();
+true:表示当前光标指向的位置有数据。
+false:表示当前光标指向的位置没有数据。
+    
+第三步：取出当前光标指向位置的元素，并且将光标向下移动一位。
+Object obj = it.next();
+```
+
+![9b5cf836c6cc50641ee4861e76148a9](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408071557420.png)
+
+迭代器细节：
+
+* 当前位置没有元素，还要强行获取，会报异常
+* 迭代器遍历完毕，指针不会复位
+* 循环中只能用一次next方法
+
+##### 增强 for 遍历
+
+```java
+for (元素数据类型 变量名 ：数组或单列集合){}
+```
+
+* 循环内不会改变集合内元素
+* 增强for的底层就是迭代器，为了简化迭代器的代码
+* 只有数组和单列集合才能用
+
+
+
+##### Lambda 表达式遍历
+
+```java
+public class CollectionDemo {
     public static void main(String[] args) {
        /* 
         lambda表达式遍历：
-                default void forEach(Consumer<? super T> action):
+        Iterable 接口中的方法：default void forEach(Consumer<? super T> action)
         */
 
         //1.创建集合并添加元素
@@ -5885,35 +5944,213 @@ public class A07_CollectionDemo7 {
 
 
 
-总结
+##### **迭代时删除元素**
 
-![b0ba9611dbce62649d84f26fd1415e1](javanote01.assets/b0ba9611dbce62649d84f26fd1415e1.png)
+```java
+public class CollectionTest {
+    public static void main(String[] args) {
+
+        // 创建集合对象
+        Collection<String> names = new ArrayList<>();
+
+        // 添加元素
+        names.add("zhangsan");
+        names.add("lisi");
+        names.add("wangwu");
+        names.add("zhaoliu");
+        names.add("zhoubapi");
+
+        // 迭代集合，删除集合中的某个元素
+        Iterator<String> it = names.iterator();
+        while (it.hasNext()) {
+            String name = it.next(); // java.util.ConcurrentModificationException 并发修改异常 modCount expectedModCount
+            if("lisi".equals(name)){
+                // 删除元素（使用集合带的remove方法删除元素）
+                //names.remove(name);
+                // 删除元素（使用迭代器的remove方法删除元素）
+                it.remove();//删除lisi
+            }
+            System.out.println(name);
+        }
+
+        System.out.println(names.size());
+        System.out.println("============================");
+        // 再次迭代
+        Iterator<String> it2 = names.iterator();
+        while (it2.hasNext()) {
+            String name = it2.next();
+            System.out.println(name);
+        }
+    }
+}
+```
+
+* 迭代集合时删除元素
+  * 使用“集合对象.remove(元素)”：会出现ConcurrentModificationException异常。
+  * 使用“迭代器对象.remove()”：不会出现异常。
+
+* 关于集合的并发修改问题
+  * 想象一下，有两个线程：A和B。A线程负责迭代遍历集合，B线程负责删除集合中的某个元素。当这两个线程同时执行时会有什么问题？
+* 如何解决并发修改问题：fail-fast机制
+  * fail-fast机制又被称为：快速失败机制。也就是说只要程序发现了程序对集合进行了并发修改。就会立即让其失败，以防出现错误。
+
+* fail-fast机制是如何实现的？以下是源码中的实现原理：
+  * 集合中设置了一个modCount属性，用来记录修改次数，使用集合对象执行增，删，改中任意一个操作时，modCount就会自动加1。
+  * 获取迭代器对象的时候，会给迭代器对象初始化一个expectedModCount属性。并且将expectedModCount初始化为modCount，即：int expectedModCount = modCount;
+  * 当使用集合对象删除元素时：modCount会加1。但是迭代器中的expectedModCount不会加1。而当迭代器对象的next()方法执行时，会检测expectedModCount和modCount是否相等，如果不相等，则抛出：ConcurrentModificationException异常。
+  * 当使用迭代器删除元素的时候：modCount会加1，并且expectedModCount也会加1。这样当迭代器对象的next()方法执行时，检测到的expectedModCount和modCount相等，则不会出现ConcurrentModificationException异常。
+
+* 注意：虽然上面程序是单线程的程序，并没有使用多线程，但是通过迭代器去遍历的同时使用集合去删除元素，这个行为将被认定为并发修改。
+* 结论：迭代集合时，删除元素要使用“迭代器对象.remove()”方法来删除，避免使用“集合对象.remove(元素)”。主要是为了避免ConcurrentModificationException异常的发生。**注意：迭代器的remove()方法删除的是next()方法返回的那个数据。remove()方法调用之前一定是先调用了next()方法，如果不是这样的，就会报错。**
+
+* 在遍历的过程中需要删除元素就用迭代器，如果只是遍历，那么使用增强for或lambda表达式
 
 
+
+### SequencedCollection接口
+
+* SequencedCollection接口是Java21版本新增的。是所有有序集合的祖宗接口
+
+* SequencedCollection接口中的方法：
+
+```JAVA
+void addFirst(Object o)：向头部添加
+
+void addLast(Object o)：向末尾添加
+
+Object removeFirst()：删除头部
+
+Object removeLast()：删除末尾
+
+Object getFirst()：获取头部节点
+
+Object getLast()：获取末尾节点
+
+SequencedCollection reversed(); 反转集合中的元素
+```
+
+除了HashSet 外，ArrayList，LinkedList，Vector，LinkedHashSet，TreeSet, Stack 都可以调用这个接口中的方法。
+
+### 泛型
+
+* 泛型是Java5的新特性，属于编译阶段的功能。
+* 泛型可以让开发者在编写代码时指定集合中存储的数据类型泛型作用：
+  * 类型安全：指定了集合中元素的类型之后，编译器会在编译时进行类型检查，如果尝试将错误类型的元素添加到集合中，就会在编译时报错，避免了在运行时出现类型错误的问题。
+  * 代码简洁：使用泛型可以简化代码，避免了繁琐的类型转换操作。比如，在没有泛型的时候，需要使用 Object 类型来保存集合中的元素，并在使用时强制类型转换成实际类型，而有了泛型之后，只需要在定义集合时指定类型即可。
+
+* 在集合中使用泛型
+
+  `Collection<String> strs = new ArrayList<String>();`
+
+  这就表示该集合只能存储字符串，存储其它类型时编译器报错。并且以上代码使用泛型后，避免了繁琐的类型转换，集合中的元素可以直接调用String类特有的方法。
+
+* Java7的新特性：
+
+  钻石表达式：`Collection<String> strs = new ArrayList<>();`
+
+
+
+**泛型的擦除与补偿（了解）**
+
+* 泛型的出现提高了编译时的安全性，正因为编译时对添加的数据做了检查，则程序运行时才不会抛出类型转换异常。因此泛型本质上是编译时期的技术，是专门给编译器用的。加载类的时候，会将泛型擦除掉（擦除之后的类型为Object类型），这个称为泛型擦除。
+* 为什么要有泛型擦除呢？其本质是为了让JDK1.4和JDK1.5能够兼容同一个类加载器。在JDK1.5版本中，程序编译时期会对集合添加的元素进行安全检查，如果检查完是安全的、没有错误的，那么就意味着添加的元素都属于同一种数据类型，则加载类时就可以把这个泛型擦除掉，将泛型擦除后的类型就是Object类，这样擦除之后的代码就与JDK1.4的代码一致。
+* 由于加载类的时候，会默认将类中的泛型擦除为Object类型，所以添加的元素就被转化为Object类型，同时取出的元素也默认为Object类型。而我们获得集合中的元素时，按理说取出的元素应该是Object类型，为什么取出的元素却是实际添加的元素类型呢？
+* 这里又做了一个默认的操作，我们称之为泛型的补偿。在程序运行时，通过获取元素的实际类型进行强转，这就叫做泛型补偿（不必手动实现强制转换）。获得集合中的元素时，虚拟机会根据获得元素的实际类型进行向下转型，也就是会恢复获得元素的实际类型，因此我们就无需手动执行向下转型操作，从本质上避免了抛出类型转换异常。
+
+**泛型的使用：在类上定义泛型**
+
+语法：`class 类名<泛型1,泛型2,泛型3...>{}`
+
+```java
+public class Vip<NameType, AgeType> {
+    private NameType name;
+    private AgeType age;
+
+    public Vip(NameType name, AgeType age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public NameType getName() {
+        return name;
+    }
+
+    public void setName(NameType name) {
+        this.name = name;
+    }
+
+    public AgeType getAge() {
+        return age;
+    }
+
+    public void setAge(AgeType age) {
+        this.age = age;
+    }
+
+    public static void main(String[] args) {
+        // 创建Vip对象
+        Vip<String, Integer> vip = new Vip<>("zhangsan", 20);
+
+        // 编译报错
+        //Vip<String, Integer> vip2 = new Vip<>("zhangsan", "20");
+
+        String name = vip.getName();
+        Integer age = vip.getAge();
+        System.out.println(name);
+        System.out.println(age);
+    }
+}
+```
+
+**泛型的使用：在静态方法上定义泛型**
+
+* 在类上定义的泛型，在静态方法中无法使用。如果在静态方法中使用泛型，则需要再方法返回值类型前面进行泛型的声明。
+* 语法格式：`<泛型1, 泛型2, 泛型3, ...> 返回值类型 方法名(形参列表) {}`
+
+**泛型的使用：在接口上定义泛型**
+
+语法格式：`interface 接口名<泛型1,泛型2,...> {}`
+
+例如：public interface Flayable<T>{}
+
+实现接口时，如果知道具体的类型，则：public class MyClass implements Flyable<Bird>{}
+
+实现接口时，如果不知道具体的类型，则：public class MyClass<T> implements Flyable<T>{}
+
+**泛型通配符**
+
+* 泛型是在限定数据类型，当在集合或者其他地方使用到泛型后，那么这时一旦明确泛型的数据类型，那么在使用的时候只能给其传递和数据类型匹配的类型，否则就会报错。
+* 有的情况下，我们在定义方法时，根本无法确定集合中存储元素的类型是什么。为了解决这个“无法确定集合中存储元素类型”问题，那么Java语言就提供了泛型的通配符。
+* 通配符的几种形式：
+  * 无限定通配符，<?>，此处“？”可以为任意引用数据类型。
+  * 上限通配符，<? extends A>，此处“？”必须为A类及其子类。
+  * 下限通配符，<? super B>，此处“？”必须为B类及其父类。
 
 ### List
 
-特有方法
+List特有方法：
 
-- 方法介绍
+| 方法名                                       | 描述                                                         |
+| -------------------------------------------- | ------------------------------------------------------------ |
+| void add(int index, E  element)              | 在此集合中的指定位置插入指定的元素，原来索引及以后的元素依次往后移 |
+| E remove(int   index)                        | 删除指定索引处的元素，返回被删除的元素                       |
+| E set(int index, E  element)                 | 修改指定索引处的元素，返回被修改的元素                       |
+| E get(int   index)                           | 返回指定索引处的元素                                         |
+| int indexOf(Object o)                        | 获取对象o在当前集合中第一次出现时的索引                      |
+| int lastIndexOf(Object o)                    | 获取对象o在当前集合中最后一次出现时的索引                    |
+| List<E> subList(int fromIndex, int  toIndex) | 截取子List集合生成一个新集合（对原集合无影响），左闭右开     |
+| static List<E> of (E... elements)            | 静态方法，返回包含任意数量元素的不可修改列表（获取的集合是只读的，不可修改的。） |
 
-  | 方法名                          | 描述                                                         |
-  | ------------------------------- | ------------------------------------------------------------ |
-  | void add(int index,E   element) | 在此集合中的指定位置插入指定的元素，原来索引及以后的元素依次往后移 |
-  | E remove(int   index)           | 删除指定索引处的元素，返回被删除的元素                       |
-  | E set(int index,E   element)    | 修改指定索引处的元素，返回被修改的元素                       |
-  | E get(int   index)              | 返回指定索引处的元素                                         |
 
-  
 
 
 List集合的五种遍历方式
 
-1. 迭代器
-2. 列表迭代器
-3. 增强for
-4. Lambda表达式
-5. 普通for循环
+1. 迭代器（iterator）
+2. 增强for
+3. Lambda表达式
+4. 普通for循环（配合get()方法）
+5. List集合特有的迭代器（listIterator）
 
 代码示例：
 
@@ -6011,7 +6248,53 @@ System.out.println(list);
 
 ```
 
-#### ArrayList
+
+
+List集合的排序
+
+* List接口中的方法：default void sort(Comparator<? super E> c);  对List集合中元素排序可以调用此方法。
+* sort方法需要一个参数: java.util.Comparator。我们把这个参数叫做比较器。这是一个接口。
+* 如何给自定义类型指定比较规则？可以对Comparator提供一个实现类，并重写compare方法来指定比较规则。
+* 当然，Comparator接口的实现类也可以采用匿名内部类的方式。
+
+```java
+public class ListSort2 {
+    public static void main(String[] args) {
+        // 创建Person对象
+        Person p1 = new Person("abc", 20);
+        Person p2 = new Person("bbc", 18);
+        Person p3 = new Person("abb", 19);
+        Person p4 = new Person("cbc", 25);
+        Person p5 = new Person("acb", 6);
+
+        // 创建List集合
+        List<Person> persons = new ArrayList<>();
+
+        persons.add(p1);
+        persons.add(p2);
+        persons.add(p3);
+        persons.add(p4);
+        persons.add(p5);
+
+        // 排序
+        persons.sort(new Comparator<Person>() {
+            @Override
+            public int compare(Person o1, Person o2) {
+                return o1.getAge() - o2.getAge();//升序
+            }
+        });
+
+
+        for (int i = 0; i < persons.size(); i++) {
+            System.out.println(persons.get(i));
+        }
+    }
+}
+```
+
+
+
+### ArrayList
 
 * ArrayList 可以加null，并且多个
 * 线程不安全
@@ -6022,7 +6305,7 @@ ArrayList 集合底层原理（动态数组）
 
 ![2819393c1614fa80637220c8c4e3138](javanote01.assets/2819393c1614fa80637220c8c4e3138.png)
 
-#### LinkedList
+### LinkedList
 
 * 底层双向链表
 * 可以加null
@@ -6036,7 +6319,7 @@ LinkedList 特有API：
 
 ![36d216b942f9db1e030c73e37a5ddac](javanote01.assets/36d216b942f9db1e030c73e37a5ddac.png)
 
-#### vector
+### vector
 
 * 底层是对象数组
 * 线程同步，即线程安全，操作方法带有synchronized
@@ -6196,15 +6479,7 @@ HashSet集合存储自定义类型元素,要想实现元素的唯一,要求必�
 
 
 
-# 泛型
 
-![bbc2e41e922b137e4c4ed846b2edd35](javanote01.assets/bbc2e41e922b137e4c4ed846b2edd35.png)
-
-![6c034fa04edf68ddf73f05013ae8c8d](javanote01.assets/6c034fa04edf68ddf73f05013ae8c8d.png)
-
-底层上存入集合的还是Object类，不过取出的时候自动强转
-
-![c948695e99113196f6efd58d66e1d40](javanote01.assets/c948695e99113196f6efd58d66e1d40.png)
 
 
 
