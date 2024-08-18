@@ -5858,13 +5858,13 @@ ps:
 * Collection方法集成了Set和List，故操作对象都是元素，无索引操作
 * add( )方法中：
   * 如果往List系列集合添加元素，方法永远返回true
-  * 如果往Set系列集合添加元素，若要添加元素不存在，方法返回true；若要添加元素已经存在，方法返回false
-* remove( )方法中，删除成功，则返回true；删除失败，则返回false，元素不存在就会删除失败
+  * 如果往Set系列集合添加元素，若要添加元素不存在，方法返回true；**若要添加元素已经存在，方法返回false**
+* remove( )方法中，删除成功，则返回true；删除失败，则返回false，元素不存在就会删除失败；通过hashCode和equals找key
 * contains( )方法中，底层是依赖equals方法进行判断是否存在的，所以，如果集合中存储的是自定义对象，也想通过contains方法来判断是否包含，那么在自定义类中一定要重写equals方法，重写后的方法是根据对象属性来判断；如果没有重写equals方法，则默认使用Object类中的equals方法进行判断，默认equals方法是依赖地址值进行判断，无意义
 
 #### Collection的遍历
 
-##### 迭代器遍历
+##### 1.迭代器遍历
 
 Iterator接口的常用方法：
 
@@ -5897,7 +5897,7 @@ Object obj = it.next();
 * 迭代器遍历完毕，指针不会复位
 * 循环中只能用一次next方法
 
-##### 增强 for 遍历
+##### 2.增强 for 遍历
 
 ```java
 for (元素数据类型 变量名 ：数组或单列集合){}
@@ -5909,7 +5909,7 @@ for (元素数据类型 变量名 ：数组或单列集合){}
 
 
 
-##### Lambda 表达式遍历
+##### 3.Lambda 表达式遍历
 
 ```java
 public class CollectionDemo {
@@ -5944,7 +5944,7 @@ public class CollectionDemo {
 
 
 
-##### **迭代时删除元素**
+#### **迭代时删除元素**
 
 ```java
 public class CollectionTest {
@@ -5991,7 +5991,7 @@ public class CollectionTest {
 
 * 关于集合的并发修改问题
   * 想象一下，有两个线程：A和B。A线程负责迭代遍历集合，B线程负责删除集合中的某个元素。当这两个线程同时执行时会有什么问题？
-* 如何解决并发修改问题：fail-fast机制
+* 如何解决并发修改问题：**fail-fast机制**
   * fail-fast机制又被称为：快速失败机制。也就是说只要程序发现了程序对集合进行了并发修改。就会立即让其失败，以防出现错误。
 
 * fail-fast机制是如何实现的？以下是源码中的实现原理：
@@ -6033,6 +6033,8 @@ SequencedCollection reversed(); 反转集合中的元素
 
 ### 泛型
 
+#### 泛型概述
+
 * 泛型是Java5的新特性，属于编译阶段的功能。
 * 泛型可以让开发者在编写代码时指定集合中存储的数据类型泛型作用：
   * 类型安全：指定了集合中元素的类型之后，编译器会在编译时进行类型检查，如果尝试将错误类型的元素添加到集合中，就会在编译时报错，避免了在运行时出现类型错误的问题。
@@ -6050,14 +6052,14 @@ SequencedCollection reversed(); 反转集合中的元素
 
 
 
-**泛型的擦除与补偿（了解）**
+#### **泛型的擦除与补偿（了解）**
 
 * 泛型的出现提高了编译时的安全性，正因为编译时对添加的数据做了检查，则程序运行时才不会抛出类型转换异常。因此泛型本质上是编译时期的技术，是专门给编译器用的。加载类的时候，会将泛型擦除掉（擦除之后的类型为Object类型），这个称为泛型擦除。
 * 为什么要有泛型擦除呢？其本质是为了让JDK1.4和JDK1.5能够兼容同一个类加载器。在JDK1.5版本中，程序编译时期会对集合添加的元素进行安全检查，如果检查完是安全的、没有错误的，那么就意味着添加的元素都属于同一种数据类型，则加载类时就可以把这个泛型擦除掉，将泛型擦除后的类型就是Object类，这样擦除之后的代码就与JDK1.4的代码一致。
 * 由于加载类的时候，会默认将类中的泛型擦除为Object类型，所以添加的元素就被转化为Object类型，同时取出的元素也默认为Object类型。而我们获得集合中的元素时，按理说取出的元素应该是Object类型，为什么取出的元素却是实际添加的元素类型呢？
 * 这里又做了一个默认的操作，我们称之为泛型的补偿。在程序运行时，通过获取元素的实际类型进行强转，这就叫做泛型补偿（不必手动实现强制转换）。获得集合中的元素时，虚拟机会根据获得元素的实际类型进行向下转型，也就是会恢复获得元素的实际类型，因此我们就无需手动执行向下转型操作，从本质上避免了抛出类型转换异常。
 
-**泛型的使用：在类上定义泛型**
+#### **泛型的使用：在类上定义泛型**
 
 语法：`class 类名<泛型1,泛型2,泛型3...>{}`
 
@@ -6102,12 +6104,12 @@ public class Vip<NameType, AgeType> {
 }
 ```
 
-**泛型的使用：在静态方法上定义泛型**
+#### **泛型的使用：在静态方法上定义泛型**
 
-* 在类上定义的泛型，在静态方法中无法使用。如果在静态方法中使用泛型，则需要再方法返回值类型前面进行泛型的声明。
+* 在类上定义的泛型，在静态方法中无法使用。如果在静态方法中使用泛型，则需要在**方法返回值类型前面**进行泛型的声明。
 * 语法格式：`<泛型1, 泛型2, 泛型3, ...> 返回值类型 方法名(形参列表) {}`
 
-**泛型的使用：在接口上定义泛型**
+#### **泛型的使用：在接口上定义泛型**
 
 语法格式：`interface 接口名<泛型1,泛型2,...> {}`
 
@@ -6117,7 +6119,7 @@ public class Vip<NameType, AgeType> {
 
 实现接口时，如果不知道具体的类型，则：public class MyClass<T> implements Flyable<T>{}
 
-**泛型通配符**
+#### **泛型通配符**
 
 * 泛型是在限定数据类型，当在集合或者其他地方使用到泛型后，那么这时一旦明确泛型的数据类型，那么在使用的时候只能给其传递和数据类型匹配的类型，否则就会报错。
 * 有的情况下，我们在定义方法时，根本无法确定集合中存储元素的类型是什么。为了解决这个“无法确定集合中存储元素类型”问题，那么Java语言就提供了泛型的通配符。
@@ -6135,7 +6137,7 @@ List特有方法：
 | void add(int index, E  element)              | 在此集合中的指定位置插入指定的元素，原来索引及以后的元素依次往后移 |
 | E remove(int   index)                        | 删除指定索引处的元素，返回被删除的元素                       |
 | E set(int index, E  element)                 | 修改指定索引处的元素，返回被修改的元素                       |
-| E get(int   index)                           | 返回指定索引处的元素                                         |
+| E get(int  index)                            | 返回指定索引处的元素                                         |
 | int indexOf(Object o)                        | 获取对象o在当前集合中第一次出现时的索引                      |
 | int lastIndexOf(Object o)                    | 获取对象o在当前集合中最后一次出现时的索引                    |
 | List<E> subList(int fromIndex, int  toIndex) | 截取子List集合生成一个新集合（对原集合无影响），左闭右开     |
@@ -6245,7 +6247,6 @@ Integer i = Integer.valueOf(1);
 list.remove(i);
 
 System.out.println(list);
-
 ```
 
 
@@ -6299,11 +6300,33 @@ public class ListSort2 {
 * ArrayList 可以加null，并且多个
 * 线程不安全
 
-ArrayList 集合底层原理（动态数组）
+构造方法：
 
-![a9583a9f71576ef68c51bab01547815](javanote01.assets/a9583a9f71576ef68c51bab01547815.png)
+public ArrayList()
 
-![2819393c1614fa80637220c8c4e3138](javanote01.assets/2819393c1614fa80637220c8c4e3138.png)
+public ArrayList(int initialCapacity)
+
+public ArrayList(Collection<? extends E> c)
+
+
+
+ArrayList 源码分析：
+
+![image-20240818183402588](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408181834775.png)
+
+![image-20240818183419599](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408181834793.png)
+
+使用无参构造时，底层数组长度默认为0，当添加第一个元素时，开始扩容为***DEFAULT_CAPACITY* = 10**；
+
+进行添加操作时，判断当元素个数与底层数组长度相等，会再次扩容，扩容规则：比较此次添加元素的个（minCapacity - oldCapacity）与默认新增容量（oldCapacity >>1: 数组扩容前的长度右移1位）的大小，谁大就扩容谁的大小；
+
+当minCapacity - oldCapacity  < oldCapacity >>时：
+
+相当于扩容**到**原始容量的1.5倍
+
+当minCapacity - oldCapacity  > oldCapacity >>时：
+
+相当于添加了多少元素就扩容多少
 
 ### LinkedList
 
@@ -6311,19 +6334,56 @@ ArrayList 集合底层原理（动态数组）
 * 可以加null
 * 线程不安全
 
+### Vector
 
+* 底层是数组
+* Vector中所有方法都有synchronized修饰，线程同步，即线程安全
+* 无参构造：public Vector() {this(10);} 则默认初始容量为10
+* 扩容策略：扩容之后的容量是原容量的2倍
 
-LinkedList 集合底层原理（双向链表）
+### 栈数据结构
 
-LinkedList 特有API：
+* LIFO原则（Last In，First Out）：后进先出
 
-![36d216b942f9db1e030c73e37a5ddac](javanote01.assets/36d216b942f9db1e030c73e37a5ddac.png)
+* 实现栈数据结构，可以用数组来实现，也可以用双向链表来实现。
 
-### vector
+* 用数组实现的代表是：Stack、ArrayDeque
 
-* 底层是对象数组
-* 线程同步，即线程安全，操作方法带有synchronized
-* 除线程安全外，与ArrayList无异
+  * Stack：Vetor的子类，实现了栈数据结构，除了具有Vetor的方法，还扩展了其它方法，完成了栈结构的模拟。不过在JDK1.6（Java6）之后就不建议使用了，因为它是线程安全的，太慢了。Stack中的方法如下：
+    * E push(E item)：压栈
+    * E pop()：弹栈（将栈顶元素删除，并返回被删除的引用）
+    * int search(Object o)：查找栈中元素（返回值的意思是：以1为开始，从栈顶往下数第几个）
+    * E peek()：窥视栈顶元素（不会将栈顶元素删除，只是看看栈顶元素是什么。注意：如果栈为空时会报异常。）
+
+  * ArrayDeque
+    * E push(E item)
+    * E pop()
+
+* 用链表实现的代表是：LinkedList
+
+  * LinkedList
+    * E push(E item)
+    * E pop()
+
+### 队列数据结构
+
+* 队列是一种特殊的线性表，特殊之处在于它只允许在表的前端（front）进行删除操作，而在表的后端（rear）进行插入操作，队列是一种操作受限制的线性表。进行插入操作（入口）的端称为队尾，进行删除操作（出口）的端称为队头。
+
+* 队列的插入操作只能在队尾操作，队列的删除操作只能在队头操作，因此队列是一种先进先出（First In First Out）的线性表，简称FIFO表。
+
+* Queue接口是一种基于FIFO（先进先出）的数据结构，而Deque接口则同时支持FIFO和LIFO（后进先出）两种操作。因此Deque接口也被称为“双端队列”。
+
+* Java集合框架中队列的实现：
+
+  * 链表实现方式：LinkedList
+
+  * 数组实现方式：ArrayDeque
+
+* LinkedList和ArrayDeque都实现了Queue、Deque接口，因此这两个类都具备队列和双端队列的特性。
+
+* LinkedList底层是基于双向链表实现的，因此它天然就是一个双端队列，既支持从队尾入队，从队头出队，也支持从队头入队，从队尾出队。用Deque的实现方式来说，就是它既实现了队列的offer()入队和poll()出队方法，也实现了双端队列的offerFirst()、offerLast()、pollFirst()和pollLast()方法等。
+
+* ArrayDeque底层是使用环形数组实现的，也是一个双端队列。它比LinkedList更加高效，因为在数组中随机访问元素的时间复杂度是O(1)，而链表中需要从头或尾部遍历链表寻找元素，时间复杂度是O(N)。循环数组：index = (start + i) % capacity
 
 
 
@@ -6331,135 +6391,257 @@ LinkedList 特有API：
 
 ### Set
 
-![8d87ec95d28f4b13af04b363c4c6353](javanote01.assets/8d87ec95d28f4b13af04b363c4c6353.png)
+Set接口继承Collection，没有任何新增任何方法
 
-![52dccee3359bc6fdd356ae99c01950f](javanote01.assets/52dccee3359bc6fdd356ae99c01950f.png)
+Set系列集合主要实现类：
 
-![b3c4d6f450842888d8f33aee77e9822](javanote01.assets/b3c4d6f450842888d8f33aee77e9822.png)
+HashSet：无序、不可重复
+
+LinkedHashSet：有序（有下标）、不可重复
+
+TreeSet：有序（可排序）、不可重复
 
 
 
 #### HashSet
 
-![9b75f78e664daa6ad056dc205d302f2](javanote01.assets/9b75f78e664daa6ad056dc205d302f2.png)
+HashSet底层就是HashMap
 
-![4946f9514a7efd92a861745d917f332](javanote01.assets/4946f9514a7efd92a861745d917f332.png)
+往HashSet集合中存储元素，实际上是放到了HashMap集合的key部分。因此放在HashSet集合中的元素，要同时重写hashCode+equals
 
-![dd120c53d339055ff2f324740a8ca1c](javanote01.assets/dd120c53d339055ff2f324740a8ca1c.png)
+```java
+/**
+ * HashSet面试题
+ */
+public class HashSetExam {
+    public static void main(String[] args) {
+        // 创建HashSet集合（底层HashMap，哈希表数据结构）
+        HashSet<Student> set = new HashSet<>();
+        // 创建Student对象
+        Student stu = new Student("张三", 18);
+        // 添加Student对象
+        set.add(stu);
+        // 又添加了新的Student对象
+        set.add(new Student("李四", 21));
+        System.out.println(set);
+        // 将张三学生的名字修改为王五
+        // 虽然修改了，但是这个节点Node还是采用了之前 张三 的哈希值
+        stu.setName("王五");
+        // 问题1：请问是否删除了HashSet集合中的stu对象呢？？？
+        // 不能删除
+        set.remove(stu);
+        //System.out.println(set);
+        // 问题2：添加以下Student对象是否成功？？？
+        // 可以添加成功
+        set.add(new Student("王五", 18));
+        //System.out.println(set);
+        // 问题3：添加以下Student对象是否成功？？？
+        // 可以添加成功
+        set.add(new Student("张三", 18));
+        System.out.println(set);
+    }
+}
+```
 
-![65d30cf14e0b14ce08a757ec99bbd56](javanote01.assets/65d30cf14e0b14ce08a757ec99bbd56.png)
 
-![0495ec6bcfa6c5ee569156891c7b9bc](javanote01.assets/0495ec6bcfa6c5ee569156891c7b9bc.png)
-
-自定义对象，不重写两个方法，则hashCode方法根据地址值计算hash值，equals方法比较的也是地址，没有什么意义
-
-HashSet集合存储自定义类型元素,要想实现元素的唯一,要求必须重写hashCode方法和equals方法
 
 #### LinkedHashSet
 
-![5bbd29424d468956a2affb9316fa2be](javanote01.assets/5bbd29424d468956a2affb9316fa2be.png)
+LinkedHashSet底层就是LinkedHashMap，所以底层是“哈希表+双向链表”。
 
-![edf479e005c9fa5df36cfd39525684f](javanote01.assets/edf479e005c9fa5df36cfd39525684f.png)
+LinkedHashSet集合存储元素特点：有序不可重复。有序指的是存进去的顺序和取出的顺序一样。
+
+放进去的元素也需要重写hashCode+equals。
 
 #### TreeSet
 
-![2de7316925cd8c84d96646fb1a04561](javanote01.assets/2de7316925cd8c84d96646fb1a04561.png)
+ * **TreeSet中不能存储null**
 
-![e734fc6a59d7e2368ba2a4d0a00aabd](javanote01.assets/e734fc6a59d7e2368ba2a4d0a00aabd.png)
+ * TreeSet集合存储元素特点：有序不可重复
 
-​	![b90e5c73edc200530eb1e851c2574aa](javanote01.assets/b90e5c73edc200530eb1e851c2574aa.png)																																																																																										
+ * 不可重复：hashCode + equals需要重写
+
+ * TreeSet集合有序：可排序
+
+ * 两种排序的方式：
+
+    * 第一种：存放在HashSet集合中的元素实现 java.lang.Comparable接口。
+
+    * 第二种：创建HashSet集合的时候，给构造方法传递一个比较器： java.util.Comparator的实现类。																																																																																								
+
+![b655038b5e067db332f4953d9302bf2](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408190129683.png)
 
 ## 双列集合
 
-![774ac77e6c8ed75ca7cc481a2586040](javanote01.assets/774ac77e6c8ed75ca7cc481a2586040.png)
+### 体系结构图
 
-* 双列集合的特点
-
-![26ee7a6cc0b54133354d07fa313499a](javanote01.assets/26ee7a6cc0b54133354d07fa313499a.png)
+![image-20240818212409271](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408182124476.png)
 
 ### Map
 
-* Map的key可以为null，只能有一个，value也可以为NULL，可以有多个
+* Map集合以key和value的键值对形式存储。key和value存储的**都是引用**
+* Map集合中key起主导作用。value是附属在key上的
+* SequencedMap是Java21新增的
+* LinkedHashMap和TreeMap都是有序集合。（key是有序的）
+* HashMap，Hashtable，Properties都是无序集合。（key是无序的）
+* Map集合的key都是不可重复的。key重复的话，value会覆盖
+* HashSet集合底层是new了一个HashMap。往HashSet集合中存储元素实际上是将元素存储到HashMap集合的key部分。HashMap集合的key是无序不可重复的，因此HashSet集合就是无序不可重复的。HashMap集合底层是哈希表/散列表数据结构，因此HashSet底层也是哈希表/散列表
+* TreeSet集合底层是new了一个TreeMap。往TreeSet集合中存储元素实际上是将元素存储到TreeMap集合的key部分。TreeMap集合的key是不可重复但可排序的，因此TreeSet集合就是不可重复但可排序的。TreeMap集合底层是红黑树，因此TreeSet底层也是红黑树。它们的排序通过java.lang.Comparable和java.util.Comparator均可实现
+* LinkedHashSet集合底层是new了一个LinkedHashMap。LinkedHashMap集合只是为了保证元素的插入顺序，效率比HashSet低，底层采用的哈希表+双向链表实现。根据源码可以看到向Set集合中add时，底层会向Map中put。value只是一个固定不变的常量，只是起到一个占位符的作用。主要是key
 
-* Map常见API
+#### Map常用方法
 
-![991f60783055b32814b341c3e4724cc](javanote01.assets/991f60783055b32814b341c3e4724cc.png)
+| 方法名                                                       | 说明                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| V put(K key, V value);                                       | 添加键值对；若键不存在，则将键值对对象加到集合中，返回null；若键已经存在，则将原有的键值对对象覆盖，返回原有键值对对象中的value |
+| void putAll(Map<? extends K,? extends V> m);                 | 添加多个键值对                                               |
+| V get(Object key);                                           | 通过key获取value                                             |
+| void clear();                                                | 清空Map                                                      |
+| boolean containsKey(Object key);                             | 是否包含某个key                                              |
+| boolean containsValue(Object value);                         | 是否包含某个value                                            |
+| int size();                                                  | 键值对个数                                                   |
+| boolean isEmpty();                                           | 判断是否为空Map                                              |
+| V remove(Object key);                                        | 通过key删除key-value                                         |
+| Collection<V> values();                                      | 获取所有的value                                              |
+| Set<K> keySet();                                             | 获取所有的key                                                |
+| Set<Map.Entry<K,V>> entrySet();                              | 获取所有键值对的Set视图                                      |
+| static <K,V> Map<K,V> of(K k1, V v1, K k2, V v2, K k3, V v3); | 静态方法，使用现有的key-value构造Map                         |
 
-* 代码示例
+interface Entry<K, V> {
 
-<img src="javanote01.assets/406c62cafe4783167c41bf1f0bc0cfa.png" alt="406c62cafe4783167c41bf1f0bc0cfa" style="zoom:150%;" />
+K getKey();
 
-![1f6a446c01ae37df797360f9f8ba701](javanote01.assets/1f6a446c01ae37df797360f9f8ba701.png)
+V getValue();
 
-* Map的遍历方式
+}
 
-  1. 键找值
+![image-20240818215630045](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408182156150.png)
 
-     <img src="javanote01.assets/923c131cd80145a89ba2481992627e4-1705476639806-6.png" alt="923c131cd80145a89ba2481992627e4" style="zoom:150%;" />
 
-     
 
-  2. 键值对
+#### Map的遍历方式
 
-     ![4d8c8c074507d0a1e09e7345b5f69ad](javanote01.assets/4d8c8c074507d0a1e09e7345b5f69ad.png)
+1. 键找值
 
-     
+   ![image-20240818221200000](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408182212126.png)
 
-  3. Lambda表达式
+   
 
-     <img src="javanote01.assets/8c9ebb1aa8218f382ff97ea4114b4df.png" alt="8c9ebb1aa8218f382ff97ea4114b4df" style="zoom:150%;" />
+2. 键值对
+
+   ![image-20240818221229260](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408182212401.png)
+
+   
+
+3. Lambda表达式
+
+   ![image-20240818221242402](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408182212540.png)
+
+### 哈希表存储原理
+
+哈希表：一种数据结构的名字。
+
+哈希函数：通过哈希函数可以将一个Java对象映射为一个数字。（就像现实世界中，每个人（对象）都会映射一个身份证号（哈希值）一样。）也就是说通过哈希函数的执行可以得到一个哈希值。
+
+在Java中，hashCode()方法就是哈希函数。也就是说hashCode()方法的返回值就是哈希值。
+
+一个好的哈希函数，可以让散列分布均匀。
+
+哈希值：也叫做哈希码。是哈希函数执行的结果。
+
+哈希碰撞：也叫做哈希冲突。当两个对象“哈希值%数组长度”之后得到的下标相同时，就发生了哈希冲突。
+
+如何解决哈希冲突？
+
+将冲突的挂到同一个链表上或同一个红黑树上。
+
+以上描述凡是“哈希”都可以换为“散列”。
+
+**重点：**
+
+**存放在HashMap集合key部分的元素，以及存储在HashSet集合中的元素，都需要同时重写hashCode+equals方法**
+
+**equals返回true时，hashCode必须相同**
+
+![7e4d70c03875172152cdc8c0a5ac6d8](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408182305720.png)
 
 ### HashMap
 
+* HashMap集合的key是无序不可重复的。无序：插入顺序和取出顺序不一定相同。不可重复：key具有唯一性。
+* 底层的数据结构是：哈希表/散列表，哈希表可能是：数组 + 链表，数组 + 红黑树， 数组 + 链表 + 红黑树等。
 * 线程不安全
+* HashMap的key可以为null，只能有一个，value也可以为null,可以有多个
+* 向HashMap集合中put时，key如果重复的话，value会覆盖
 
-* 特点
+![image-20240818231038436](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408182310563.png)
 
-![02099a799b1a83e349029ead9fd8bc5](javanote01.assets/02099a799b1a83e349029ead9fd8bc5.png)
 
-* 底层原理
-
-![968725aab490f9502328a523697375e](javanote01.assets/968725aab490f9502328a523697375e.png)
-
-![7aab4c42832b37e334d3be39cf0f938](javanote01.assets/7aab4c42832b37e334d3be39cf0f938.png)
 
 
 
 ### LinkedHashMap
 
-![a5ac3ac636a33953ae4221c7fae2358](javanote01.assets/a5ac3ac636a33953ae4221c7fae2358.png)
+* LinkedHashMap集合和HashMap集合的用法完全相同。
+* 不过LinkedHashMap可以保证插入顺序。
+* LinkedHashMap集合因为可以保证插入顺序，因此效率比HashMap低一些。
+* LinkedHashMap是如何保证插入顺序的？底层采用了双向链表来记录顺序。
+* LinkedHashMap集合底层采用的数据结构是：哈希表 + 双向链表。
+* LinkedHashMap集合的key是：有序不可重复。key部分也需要同时重写hashCode + equals。
+* key的取值可以为null，key如果相同，value也是覆盖。
+
+![image-20240818235149556](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408182351688.png)
 
 
 
-### HashTable
+### Hashtable
 
-* 存放键值对
-* 键和值都不能为NULL
-* 使用方法基本和HashMap一样
-* HashTable是线程安全的，hashmap不是
-* ![a6cca15aeba287879b68f6af839c404](javanote01.assets/a6cca15aeba287879b68f6af839c404.png)
+* 使用方法基本和HashMap一样，底层也是哈希表
+* Hashtable是**线程安全**的，方法上都有synchronized关键字。使用较少，因为保证线程安全有其他方式
+* Hashtable的初始化容量：11
+* 默认加载因子：0.75
+* Hashtable的扩容策略：2倍
+* **键和值都不能为NULL**
 
 
+
+### Properties
+
+ * **键和值都不能为NULL**
+
+ * java.util.Properties，我们一般叫做：属性类。
+
+ * Properties继承Hashtable，所以Properties也是线程安全的。Properties也是一个Map集合。
+
+ * Properties属性类一般和java程序中的属性配置文件联合使用，属性配置文件的扩展名是：xxxxxxx.properties
+
+ * Properties类不支持泛型。**key和value是固定类型，都是String类型**。
+
+ * 目前需要掌握的Properties三个方法：
+
+   * String value = pro.getProperty("name"); 和put方法一样
+
+   * pro.setProperty("name", "value"); 通过key获取value
+
+   * Enumeration names = pro.propertyNames(); 获取所有的key 
 
 
 
 ### TreeMap
 
-![41b353df636453fee9a7609293357a2](javanote01.assets/41b353df636453fee9a7609293357a2.png)
-
-### Properties
-
-![2fe206b610f62df62499991ff81da78](javanote01.assets/2fe206b610f62df62499991ff81da78.png)
-
-
+* 可排序：按照元素的默认规则（由小到大）排序，不可重复
+* TreeMap底层就是红黑树
+* TreeMap和HashMap用法一样，只不过需要key排序的时候，就可以使用TreeMap
+* TreeMap集合的key也需要重写hashCode + equals（保证不可重复）
+* **TreeMap的key不能是null，value可以是null**
+* 让TreeMap自定义类型的key可排序，有两种方式：
+  * 第一种方式：key实现了Comparable接口，并且提供了compareTo方法，在该方法中添加了比较规则。(比较规则不变的话建议这种。)
+  * 第二种方式：创建TreeMap集合时，传一个比较器，比较器实现Comparator接口，在compare方法中添加比较规则。
 
 ## Collections
 
-![a41867926592db2ce3adf738dec38e2](javanote01.assets/a41867926592db2ce3adf738dec38e2.png)
+Collection不是集合，是集合工具类
 
-![45479487cca34d122769753c5ac19c7](javanote01.assets/45479487cca34d122769753c5ac19c7.png)
-
-
+![image-20240819020210539](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408190202092.png)
 
 
 
