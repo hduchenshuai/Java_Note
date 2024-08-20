@@ -6575,9 +6575,249 @@ V getValue();
 
 ![image-20240818231038436](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408182310563.png)
 
+**手写HashMap**
 
+```java
+/**
+ * 手写HashMap集合的put方法和get方法。
+ */
+public class MyHashMap<K,V> {
+    /**
+     * 哈希表
+     */
+    private Node<K,V>[] table;
 
+    /**
+     * 键值对的个数
+     */
+    private int size;
 
+    @SuppressWarnings("unchecked")
+    public MyHashMap() {
+        // 注意：new数组的时候，不能使用泛型。这样写是错误的：new Node<K,V>[16];
+        this.table = new Node[16];
+    }
+
+    static class Node<K,V>{
+        /**
+         * key的hashCode()方法的返回值。
+         * 哈希值,哈希码
+         */
+        int hash;
+        /**
+         * key
+         */
+        K key;
+        /**
+         * value
+         */
+        V value;
+        /**
+         * 下一个结点的内存地址
+         */
+        Node<K,V> next;
+
+        /**
+         * 构造一个结点对象
+         * @param hash 哈希值
+         * @param key 键
+         * @param value 值
+         * @param next 下一个结点地址
+         */
+        public Node(int hash, K key, V value, Node<K, V> next) {
+            this.hash = hash;
+            this.key = key;
+            this.value = value;
+            this.next = next;
+        }
+
+        @Override
+        public String toString(){
+            return "["+key+", "+value+"]";
+        }
+    }
+
+    /**
+     * 获取集合中的键值对的个数
+     * @return 个数
+     */
+    public int size(){
+        return size;
+    }
+
+    /**
+     * 向MyHashMap集合中添加一个键值对。
+     * @param key 键
+     * @param value 值
+     * @return value，如果key重复，则返回oldValue，如果key不重复，则返回newValue
+     */
+    public V put(K key, V value){
+        /*
+        【第一步】：处理key为null的情况
+            如果添加键值对的key就是null，则将该键值对存储到table数组索引为0的位置。
+        【第二步】：获得key对象的哈希值
+            如果添加键值对的key不是null，则就调用key的hashcode()方法，获得key的哈希值。
+        【第三步】：获得键值对的存储位置
+            因为获得的哈希值在数组合法索引范围之外，因此我们就需要将获得的哈希值转化为[0，数组长度-1]范围的整数，
+            那么可以通过取模法来实现，也就是通过“哈希值 % 数组长度”来获得索引位置（i）。
+        【第四步】：将键值对添加到table数组中
+            当table[i]返回结果为null时，则键键值对封装为Node对象并存入到table[i]的位置。
+            当table[i]返回结果不为null时，则意味着table[i]存储的是单链表。我们首先遍历单链表，如果遍历出来节点的
+            key和添加键值对的key相同，那么就执行覆盖操作；如果遍历出来节点的key和添加键值对的key都不同，则就将键键
+            值对封装为Node对象并插入到单链表末尾。
+         */
+        if(key == null){
+            return putForNullKey(value);
+        }
+        // 程序执行到此处说明key不是null
+        // 获取哈希值
+        int hash = key.hashCode();
+        // 将哈希值转换成数组的下标
+        int index = Math.abs(hash % table.length);
+        // 取出下标index位置的Node
+        Node<K,V> node = table[index];
+        if(null == node){
+            table[index] = new Node<>(hash, key, value, null);
+            size++;
+            return value;
+        }
+        // 有单向链表（遍历单向链表，尾插法）
+        Node<K,V> prev = null;
+        while(null != node){
+            if(node.key.equals(key)){
+                V oldValue = node.value;
+                node.value = value;
+                return oldValue;
+            }
+            prev = node;
+            node = node.next;
+        }
+        prev.next = new Node<>(hash, key, value, null);
+        size++;
+        return value;
+    }
+
+    private V putForNullKey(V value) {
+        Node<K,V> node = table[0];
+        if(node == null){
+            table[0] = new Node<>(0, null,value,null);
+            size++;
+            return value;
+        }
+        // 程序可以执行到此处，说明下标为0的位置上有单向链表
+        Node<K, V> prev = null;
+        while(node != null){
+            if(node.key == null){
+                V oldValue = node.value;
+                node.value = value;
+                return oldValue;
+            }
+            prev = node;
+            node = node.next;
+        }
+        prev.next = new Node<>(0, null,value,null);
+        size++;
+        return value;
+    }
+
+    /**
+     * 通过key获取value
+     * @param key 键
+     * @return 值 如果key存在，则返回Value，如果key不存在，则返回null
+     */
+    public V get(K key){
+        /*
+        【第一步】：处理key为null的情况
+        如果查询的key就是null，则就在table数组索引为0的位置去查询。
+        【第二步】：获得key对象的哈希值
+        如果查询的key不是null，则就调用key的hashcode()方法，获得key的哈希值。
+        【第三步】：获得键值对的存储位置
+        因为获得的哈希值在数组合法索引范围之外，因此我们就需要将获得的哈希值转化为[0，数组长度-1]范围的整数，
+        那么可以通过取模法来实现，也就是通过“哈希值 % 数组长度”来获得索引位置（i）。
+        【第四步】：遍历单链表，根据key获得value值
+        如果table[i]返回的结果为null，则证明单链表不存在，那么返回null即可
+        如果table[i]返回的结果不为null时，则证明单链表存在，那么就遍历整个单链表。如果遍历出来节点的key和查询
+        的key相同，那么就返回遍历出来节点的value值；如果整个单链表遍历完毕，则遍历出来节点的key和查询的key都不
+        相等，那么就证明查询key在链表中不存在，则直接返回null即可。
+         */
+        if(null == key){
+            Node<K,V> node = table[0];
+            if(null == node){
+                return null;
+            }
+            // 程序执行到这里，数组下标为0的位置不是null。就是有单向链表。
+            while(node != null){
+                if(null == node.key){
+                    return node.value;
+                }
+                node = node.next;
+            }
+        }
+        // key不是null
+        int hash = key.hashCode();
+        int index = Math.abs(hash % table.length);
+        Node<K,V> node = table[index];
+        if(null == node){
+            return null;
+        }
+        while(null != node){
+            if(node.key.equals(key)){
+                return node.value;
+            }
+            node = node.next;
+        }
+        return null;
+    }
+
+    /**
+     * 重写toString方法，直接输出Map集合是会调用。
+     * @return ""
+     */
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < table.length; i++) {
+            Node<K,V> node = table[i];
+            // 如果node不是空，就遍历整个单向链表
+            while(node != null){
+                sb.append(node);
+                node = node.next;
+            }
+        }
+        return sb.toString();
+    }
+}
+```
+
+**HashMap在Java8后的改进（包含Java8）**
+
+* 初始化时机：
+  * Java8之前：构造方法执行时初始化table数组。
+  * Java8之后：第一次调用put方法时初始化table数组。
+
+* 插入法：
+  * Java8之前：头插法
+  * Java8之后：尾插法
+
+* 数据结构：
+  * Java8之前：数组 + 单向链表
+  * Java8之后：数组 + 单向链表 + 红黑树；最开始使用单向链表解决哈希冲突。如果结点数量 >= 8，并且table的长度 >= 64。单向链表转换为红黑树。当删除红黑树上的结点时，结点数量 <= 6 时。红黑树转换为单向链表。
+
+**HashMap初始化容量永远都是2的次幂**
+
+* HashMap集合初始化容量16（第一次调用put方法时初始化）
+
+* HashMap集合的容量永远都是2的次幂，假如给定初始化容量为31，它底层也会变成32的容量。
+
+* 将容量设置为2的次幂作用是：加快哈希计算，减少哈希冲突。
+
+* 为什么会加快哈希计算？
+
+  首先你要知道，使用二进制运算是最快的。当一个数字是2的次幂时，例如数组的长度是2的次幂：hash & (length-1) 的结果和 hash % length的结果相同。注意：只有是2的次幂时，以上等式才会成立。因为使用 & 运算符，让效率提升，因此建议容量一直是2的次幂。
+
+* 为什么会减少哈希冲突？
+
+  底层运算是：hash & length - 1，如果length是偶数：length-1后一定是奇数，奇数二进制位最后一位一定是1,1和其他二进制位进行与运算，结果可能是1，也可能是0，这样可以减少哈希冲突，让散列分布更加均匀。如果length是奇数：length-1后一定是偶数，偶数二进制位最后一位一定是0,0和任何数进行与运算，结果一定是0，这样就会导致发生大量的哈希冲突，白白浪费了一半的空间。
 
 ### LinkedHashMap
 
@@ -6667,21 +6907,53 @@ Collection不是集合，是集合工具类
 
 # 多线程
 
-进程：程序的基本执行实体
+## 线程概述
 
-线程：操作系统能够进行运算调度的最小单位，包含在进程之中，是进程的实际运作单位
+* **什么是进程？什么是线程？它们的区别？**
 
+  进程是指操作系统中的一段程序，它是一个正在执行中的程序实例，具有独立的内存空间和系统资源，如文件、网络端口等。在计算机程序执行时，先创建进程，再在进程中进行程序的执行。一般来说，一个进程可以包含多个线程
 
+  线程是指进程中的一个执行单元，是进程的一部分，它负责在进程中执行程序代码。每个线程都有自己的栈和程序计数器，并且可以共享进程的资源。多个线程可以在同一时刻执行不同的操作，从而提高了程序的执行效率。
 
-并行： 在同一时刻，多个指令在多个CPU上同时进行
+  现代的操作系统是支持多进程的，也就是可以启动多个软件，一个软件就是一个进程。称为：多进程并发。
 
-并发：在同一时间段，多个指令在单个CPU上交替执行
+  通常一个进程都是可以启动多个线程的。称为：多线程并发。
 
+* **多线程的作用？**
 
+  提高处理效率。（多线程的优点之一是能够使 CPU 在处理一个任务时同时处理多个线程，这样可以充分利用 CPU 的资源，提高 CPU 的利用效率。）
 
-## 实现多线程的三种方式
+* JVM规范中规定：
 
-1.继承Thread类
+  **堆内存、方法区 是线程共享的**
+
+  **虚拟机栈、本地方法栈、程序计数器 是每个线程私有的**
+
+* 关于Java程序的运行原理
+
+  “java HelloWorld”执行后，会启动JVM，JVM的启动表示一个进程启动了。JVM进程会首先启动一个主线程（main-thread），主线程负责调用main方法。因此main方法是在主线程中运行的。除了主线程之外，还启动了一个垃圾回收线程。因此启动JVM，至少启动了两个线程。在main方法的执行过程中，程序员可以手动创建其他线程对象并启动。
+
+## 并发与并行
+
+并行： **在同一时刻，多个指令在多个CPU上同时进行**；使用单核CPU的时候，同一时刻只能有一条指令执行，但多个指令被快速的轮换执行，使得在宏观上具有多个指令同时执行的效果，但在微观上并不是同时执行的，只是把时间分成若干端，使多个指令快速交替的执行。
+
+并发：**在同一时间段，多个指令在单个CPU上交替执行**；使用多核CPU的时候，同一时刻，有多条指令在多个CPU上同时执行（微观、宏观）
+
+不管并发还是并行，都提高了程序对CPU资源的利用率，最大限度地利用CPU资源，而我们使用多线程的目的就是为了提高CPU资源的利用率。
+
+## 线程的调度模型
+
+如果多个线程被分配到一个CPU内核中执行，则同一时刻只能允许有一个线程能获得CPU的执行权，那么进程中的多个线程就会抢夺CPU的执行权，这就是涉及到线程调度策略。
+
+**分时调度模型**：所有线程轮流使用CPU的执行权，并且平均的分配每个线程占用的CPU的时间。
+
+**抢占式调度模型**：让优先级高的线程以较大的概率优先获得CPU的执行权，如果线程的优先级相同，那么就会随机选择一个线程获得CPU的执行权，而Java采用的就是抢占式调用。
+
+优先级线程默认优先级是5；线程优先级的范围是：1-10（10代表优先级最高，表示抢到cpu概率是大的，但也仅仅是概率）
+
+## 实现多线程的四种方式
+
+### 1.继承Thread类
 
 ```java
 //步骤
@@ -6689,26 +6961,47 @@ Collection不是集合，是集合工具类
 //2.在MyThread类中重写run()方法
 //3.创建MyThread类的对象
 //4.调用start()方法开启线程
-public class MyThread extends Thread {
-    @Override
-    public void run() {
-        for(int i=0; i<100; i++) {
-            System.out.println(i);
+public class ThreadTest {
+    public static void main(String[] args) {
+
+        Thread t = new MyThread();
+
+        // 直接调用run方法，不会启动新的线程。
+        // java中有一个语法规则：对于方法体当中的代码，必须遵循自上而下的顺序依次逐行执行。
+        // run()方法不结束，main方法是无法继续执行的。
+        //t.run();
+
+        // 调用start()方法，启动线程
+        // java中有一个语法规则：对于方法体当中的代码，必须遵循自上而下的顺序依次逐行执行。
+        // start()方法不结束，main方法是无法继续执行的。
+        // start()瞬间就会结束，原因这个方法的作用是：启动一个新的线程，只要新线程启动成功了，start()就结束了。
+        t.start();
+
+        // 这里编写的代码在main方法中，因此这里的代码属于在主线程中执行。
+        for (int i = 0; i < 100; i++) {
+            System.out.println("main--->" + i);
         }
     }
 }
-public class MyThreadDemo {
-    public static void main(String[] args) {
-        MyThread my1 = new MyThread();
-        MyThread my2 = new MyThread();
 
-        my1.start();
-        my2.start();
+// 自定义一个线程类
+// java.lang.Thread本身就是一个线程。
+// MyThread继承Thread，因此MyThread本身也是一个线程。
+class MyThread extends Thread {
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("MyThread--->" + i);
+        }
     }
 }
 ```
 
-2.实现Runnable接口
+![image-20240819201603933](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408192016255.png)
+
+![image-20240819201656010](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408192016108.png)
+
+### 2.实现Runnable接口
 
 ```java
 //步骤
@@ -6717,87 +7010,182 @@ public class MyThreadDemo {
 //3.创建MyRunnable类的对象
 //4.创建Thread类的对象，把MyRunnable对象作为构造方法的参数
 //5.调用start()方法开启线程
-public class MyRunnable implements Runnable {
-    @Override
-    public void run() {
-        for(int i=0; i<100; i++) {
-            System.out.println(Thread.currentThread().getName()+":"+i);
+public class ThreadTest {
+    public static void main(String[] args) {
+
+        Thread t = new Thread(new MyRunnable());
+        t.start();
+
+        // 主线程中执行的。
+        for (int i = 0; i < 100; i++) {
+            System.out.println("main----->" + i);
         }
     }
 }
-public class MyRunnableDemo {
-    public static void main(String[] args) {
-        MyRunnable my = new MyRunnable();
-        Thread t1 = new Thread(my);
-        Thread t2 = new Thread(my);
-        t1.start();
-        t2.start();
+
+// 严格来说，这个不是一个线程类
+// 它是一个普通的类，只不过实现了一个Runnable接口。
+class MyRunnable implements Runnable {
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println("t----->" + i);
+        }
     }
 }
 ```
 
-3.利用Callable接口和Future接口
+### 3.实现Callable接口
 
 ```java
 //步骤
 //1.定义一个类MyCallable实现Callable接口
 //2.在MyCallable类中重写call()方法
 //3.创建MyCallable类的对象
-//4.创建Future的实现类FutureTask对象，把MyCallable对象作为构造方法的参数
+//4.创建Future接口的实现类FutureTask对象，把MyCallable对象作为构造方法的参数
 //5.创建Thread类的对象，把FutureTask对象作为构造方法的参数
 //6.启动线程
 //7.再调用get方法，就可以获取线程结束之后的结果。
-public class MyCallable implements Callable<String> {
-    @Override
-    public String call() throws Exception {
-        for (int i = 0; i < 100; i++) {
-            System.out.println("跟女孩表白" + i);
+public class ThreadTest {
+    public static void main(String[] args) {
+        // 创建“未来任务”对象
+        FutureTask<Integer> task = new FutureTask<>(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                // 处理业务......
+                Thread.sleep(1000 * 5);
+                return 1;
+            }
+        });
+
+        // 创建线程对象
+        Thread t = new Thread(task);
+        t.setName("t");
+
+        // 启动线程
+        t.start();
+
+        try {
+            // 获取“未来任务”线程的返回值
+            // 阻塞当前线程，等待“未来任务”结束并返回值。
+            // 拿到返回值，当前线程的阻塞才会解除。继续执行。
+            Integer i = task.get();
+            System.out.println(i);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        //返回值就表示线程运行完毕之后的结果
-        return "答应";
-    }
-}
-public class Demo {
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
-        //线程开启之后需要执行里面的call方法
-        MyCallable mc = new MyCallable();
-        
-        FutureTask<String> ft = new FutureTask<>(mc);
-        
-        Thread t1 = new Thread(ft);
-        t1.start();
-        
-        String s = ft.get();
-        System.out.println(s);
     }
 }
 ```
 
-![d76010950d17812177d4235321a64b5](javanote01.assets/d76010950d17812177d4235321a64b5.png)
+### 4.线程池实现线程
+
+```java
+/**
+ * 创建线程的第四种方式：使用线程池技术。
+ * 线程池本质上就是一个缓存：cache
+ * 一般都是服务器在启动的时候，初始化线程池，
+ * 也就是说服务器在启动的时候，创建N多个线程对象，
+ * 直接放到线程池中，需要使用线程对象的时候，直接从线程池中获取。
+ */
+public class ThreadTest {
+    public static void main(String[] args) {
+
+        // 创建一个线程池对象（线程池中有3个线程）
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+        // 将任务交给线程池（你不需要触碰到这个线程对象，你只需要将要处理的任务交给线程池即可。）
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 10; i++) {
+                    System.out.println(Thread.currentThread().getName() + "--->" + i);
+                }
+            }
+        });
+
+        // 最后记得关闭线程池
+        executorService.shutdown();
+    }
+}
+```
 
 
 
-## 线程优先级
+## 线程常用方法
 
-线程调度
+```java
+/**
+ * 关于线程中常用方法：
+ *      实例方法：
+ *          String getName();  获取线程对象的名字
+ *          void setName(String threadName); 修改线程的名字
+ *      静态方法：
+ *          static Thread currentThread(); 获取当前线程对象的引用。
+ */
+public class ThreadTest {
+    public static void main(String[] args) {
 
-- 两种调度方式
-  - 分时调度模型：所有线程轮流使用 CPU 的使用权，平均分配每个线程占用 CPU 的时间片
-  - 抢占式调度模型：优先让优先级高的线程使用 CPU，如果线程的优先级相同，那么会随机选择一个，优先级高的线程获取的 CPU 时间片相对多一些
+        // 获取当前线程对象
+        Thread mainThread = Thread.currentThread();
 
-- Java使用的是抢占式调度模型
+        // 获取当前线程的名字
+        System.out.println("主线程的名字：" + mainThread.getName()); // 主线程的名字：main
 
-优先级线程默认优先级是5；线程优先级的范围是：1-10（10代表优先级最高，表示抢到cpu概率是大的，但也仅仅是概率）
+        // 创建线程对象
+        Thread t = new MyThread("tt");
+        // 修改线程的名字
+        t.setName("t");
+        // 启动线程
+        t.start();
+
+        // 创建线程对象
+        Thread t1 = new MyThread("tt1");
+        // 修改线程名字
+        t1.setName("t1");
+        // 启动线程
+        t1.start();
+    }
+}
+
+class MyThread extends Thread{
+
+    public MyThread(String threadName){
+        super(threadName);
+    }
+
+    @Override
+    public void run() {
+        // 获取当前线程对象
+        Thread t = Thread.currentThread();
+        // 获取当前线程对象的名字
+        System.out.println("分支线程的名字：" + t.getName()); // 分支线程的名字：Thread-0
+    }
+}
+```
+
+
+
+
+
+
 
 ## 线程的生命周期
 
-![fdda97278806a32dd54af7f5a53a5f5](javanote01.assets/fdda97278806a32dd54af7f5a53a5f5.png)
+* 线程生命周期指的是：从线程对象新建，到最终线程死亡的整个过程。
+* 线程生命周期包括七个重要阶段：
+  * 新建状态（NEW）
+  * **就绪状态（RUNNABLE）**
+  * **运行状态（RUNNABLE）**
+  * 超时等待状态（TIMED_WAITING）
+  * 等待状态（WAITING）
+  * 阻塞状态（BLOCKED）
+  * 死亡状态（TERMINATED）
 
-## 生产者和消费者（等待唤醒机制）
+![a6141d18cf0406a00f7c18c802e8ff3](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408192038600.png)
 
-## 线程池
 
-![f32b507767e036a82106eb3fc22bf27](javanote01.assets/f32b507767e036a82106eb3fc22bf27.png)
 
 # IO流
 
