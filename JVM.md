@@ -607,7 +607,7 @@ Java垃圾回收过程会通过单独的GC线程来完成，但是不管使用�
 
 #### 年轻代-Serial垃圾回收器
 
-
+![12ac50fca3d455fc89a49c9bfaef75f](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408291730497.png)
 
 #### 老年代-SerialOld垃圾回收器
 
