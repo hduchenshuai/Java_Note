@@ -1,3 +1,30 @@
+# JVM概述
+
+## 什么是JVM
+
+ JVM 本质上是一个运行在计算机上的程序，他的职责是运行Java字节码文件
+
+![571aa6c49e8f73ae9324db32a89ac10](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409011750655.png)
+
+## JVM的功能
+
+1. **解释和运行**
+   * 对字节码文件中的指令实时的解释成机器码让计算机执行
+2. **内存管理**
+   * 自动为对象、方法等分配内存
+   * 自动的垃圾回收机制， 回收不再使用的对象
+3. **即时编译（JIT）**
+   * 对热点代码进行优化， 提升执行效率
+   *  Java需要实时解释，主要是为了支持跨平台特性。
+
+## JVM的种类
+
+![20fb619f56cef127586ec85677c31da](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409011755439.png)
+
+## JVM的组成
+
+![2b13b9a39b9bd1f59f496cd866a2da7](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409011819957.png)
+
 # 类的生命周期
 
 **1.加载(Loading)**
