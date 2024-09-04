@@ -657,6 +657,52 @@ Java垃圾回收过程会通过单独的GC线程来完成，但是不管使用�
 
 #### 老年代-SerialOld垃圾回收器
 
+![a0e075a95dffed94707d216af85e104](C:/Users/HP/OneDrive/%E6%96%87%E6%A1%A3/WeChat%20Files/wxid_ifv5gcvtng1322/FileStorage/Temp/a0e075a95dffed94707d216af85e104.png)
+
+
+
+#### 年轻代-ParNew垃圾回收器
+
+#### 老年代-CMS(Concurrent Mark Sweep)垃圾回收器
+
+#### 年轻代-Parallel Scavenge垃圾回收器
+
+#### 老年代-Parallel Old垃圾回收器
+
+#### G1垃圾回收器
+
+G1的整个堆会被划分成多个大小相等的区域，称之为区Region，区域不要求是连续的。分为Eden、Survivor、 Old区。Region的大小通过堆空间大小/2048计算得到，也可以通过参数-XX:G1HeapRegionSize=32m指定(其 中32m指定region大小为32M)，Region size必须是2的指数幂，取值范围从1M到32M。
+
+G1垃圾回收有两种方式：
+
+ ⚫ 1、年轻代回收（Young GC）
+
+ ⚫ 2、混合回收（Mixed GC）
+
+年轻代回收（Young GC），回收Eden区和Survivor区中不用的对象。会导致STW，G1中可以通过参数-XX:MaxGCPauseMillis=n（默认200） 设置每次垃圾回收时的最大暂停时间毫秒数，G1垃圾回收器会尽可能地 保证暂停时间
+
+**G1垃圾回收器 –执行流程** 
+
+1、新创建的对象会存放在Eden区。当G1判断年轻代区不足（max默认60%），无法分配对象时需要回收时会执行 Young GC。 
+
+2、标记出Eden和Survivor区域中的存活对象， 
+
+3、根据配置的最大暂停时间选择某些区域将存活对象复制到一个新的Survivor区中（年龄+1），清空这些区域
+
+G1在进行Young GC的过程中会去记录每次垃圾回收时每个Eden区和Survivor区的平均耗时，以作为下次回收时的 参考依据。这样就可以根据配置的最大暂停时间计算出本次回收时最多能回收多少个Region区域了。 比如 -XX:MaxGCPauseMillis=n（默认200），每个Region回收耗时40ms，那么这次回收最多只能回收4个Region。
+
+4、后续Young GC时与之前相同，只不过Survivor区中存活对象会被搬运到另一个Survivor区。 
+
+5、当某个存活对象的年龄到达阈值（默认15），将被放入老年代
+
+6、部分对象如果大小超过Region的一半，会直接放入老年代，这类老年代被称为Humongous区。比如堆内存是 4G，每个Region是2M，只要一个大对象超过了1M就被放入Humongous区，如果对象过大会横跨多个Region
+
+7、多次回收之后，会出现很多Old老年代区，此时总堆占有率达到阈值时 （-XX:InitiatingHeapOccupancyPercent默认45%）会触发混合回收MixedGC。回收所有年轻代和 部分老年代的对象以及大对象区。采用复制算法来完成
+
+![58df9f5c26b785ec6b68195a98bf40c](C:/Users/HP/OneDrive/%E6%96%87%E6%A1%A3/WeChat%20Files/wxid_ifv5gcvtng1322/FileStorage/Temp/58df9f5c26b785ec6b68195a98bf40c.png)
+
+![7f5627898bbe9e8e51196d8e8c834c0](C:/Users/HP/OneDrive/%E6%96%87%E6%A1%A3/WeChat%20Files/wxid_ifv5gcvtng1322/FileStorage/Temp/7f5627898bbe9e8e51196d8e8c834c0.png)
+
 # 内存泄漏问题实战
 
 ## 内存溢出和内存泄漏
@@ -665,3 +711,24 @@ Java垃圾回收过程会通过单独的GC线程来完成，但是不管使用�
 
 少量的内存泄漏可以容忍，但是如果发生持续的内存泄漏，就像滚雪球雪球越滚越大，不管有多大的内存迟早会被消耗完，最终导致的结果就是**内存溢出**。**但是产生内存溢出并不是只有内存泄漏这一种原因**。
 
+# JVM参数
+
+ -Xmx：最大堆内存
+
+ –Xms：初始堆内存
+
+ -XX:MaxMetaspaceSize：最大元空间大小
+
+ –XX:MetaspaceSize：是到达这个值之后会触发FULLGC
+
+-Xss ：虚拟机栈大小
+
+
+
+以下参数不建议手动设置
+
+-Xmn：年轻代的大小，默认值为整个堆的1/3，可以根据峰值流量计算最大的年轻代大小，尽量让对象只存放在年 轻代，不进入老年代。但是实际的场景中，接口的响应时间、创建对象的大小、程序内部还会有一些定时任务等不 确定因素都会导致这个值的大小并不能仅凭计算得出，如果设置该值要进行大量的测试。G1垃圾回收器尽量不要设 置该值，G1会动态调整年轻代的大小
+
+‐XX:SurvivorRatio 伊甸园区和幸存者区的大小比例，默认值为8。
+
+ ‐XX:MaxTenuringThreshold 最大晋升阈值，年龄大于此值之后，会进入老年代。另外JVM有动态年龄判断机 制：将年龄从小到大的对象占据的空间加起来，如果大于survivor区域的50%，然后把等于或大于该年龄的对象， 放入到老年代
