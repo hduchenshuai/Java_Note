@@ -44,7 +44,11 @@
 
 
 
-![448930403218259c8decbff1ad08fc6](C:/Users/HP/OneDrive/%E6%96%87%E6%A1%A3/WeChat%20Files/wxid_ifv5gcvtng1322/FileStorage/Temp/448930403218259c8decbff1ad08fc6.png)
+**i++ 和 ++i 的区别**
+
+![ea989accd6305bb8889c591dc15e67c](../typora_repo/JVM/ea989accd6305bb8889c591dc15e67c.png)
+
+
 
 
 
@@ -665,17 +669,54 @@ Java垃圾回收过程会通过单独的GC线程来完成，但是不管使用�
 
 #### 老年代-SerialOld垃圾回收器
 
-![a0e075a95dffed94707d216af85e104](C:/Users/HP/OneDrive/%E6%96%87%E6%A1%A3/WeChat%20Files/wxid_ifv5gcvtng1322/FileStorage/Temp/a0e075a95dffed94707d216af85e104.png)
+![aabcdb203a1bb8e51860d02dfb6cf50](../typora_repo/JVM/aabcdb203a1bb8e51860d02dfb6cf50.png)
 
 
 
 #### 年轻代-ParNew垃圾回收器
 
-#### 老年代-CMS(Concurrent Mark Sweep)垃圾回收器
+![ee8efedc62afcbb2f8c0f390bf00ba0](../typora_repo/JVM/ee8efedc62afcbb2f8c0f390bf00ba0.png)
+
+#### 老年代-CMS垃圾回收器
+
+![d06acc5a57ba006c51604647fa5abcf](../typora_repo/JVM/d06acc5a57ba006c51604647fa5abcf.png)
+
+CMS(Concurrent Mark Sweep)执行步骤： 
+
+1. 初始标记，用极短的时间标记出GCRoots能直接关联到的对象。
+2. 并发标记,   标记所有的对象，用户线程不需要暂停。 
+3. 重新标记，由于并发标记阶段有些对象会发生了变化，存在错标、漏标等情况，需要重新标记。 
+4. 并发清理，清理死亡的对象，用户线程不需要暂停
+
+优点：
+
+1、CMS垃圾回收器关注的是系统的暂停时间， 允许用户线程和垃圾回收线程在某些步骤中同时执行，**减少了用户线程的等待时间**，系统由于垃圾回收出现的停顿时间较短，用户体验好
+
+缺点： 
+
+1、CMS使用了**标记-清除算法**，在垃圾收集结束之后会出现大量的内存碎片，CMS会在Full GC时进行碎片的整理。 这样会导致用户线程暂停
+
+2、无法处理在并发清理过程中产生的“**浮动垃圾**”，不能做到完全的垃圾回收。
+
+3、如果老年代内存不足无法分配对象，CMS就会退化成Serial Old单线程回收老年代
+
+4、存在线程资源争抢问题，由于CPU的核心数有限，就会影响用户线程执行的性能
+
+
+
+适用场景：
+
+大型的互联网系统中用户请求数 据量大、频率高的场景 比如订单接口、商品接口等
+
+
 
 #### 年轻代-Parallel Scavenge垃圾回收器
 
+![ea6a6bbffb8f714f850326a1fcfe0b0](../typora_repo/JVM/ea6a6bbffb8f714f850326a1fcfe0b0.png)
+
 #### 老年代-Parallel Old垃圾回收器
+
+![c5f0b083b389e4ad953d362762430fd](../typora_repo/JVM/c5f0b083b389e4ad953d362762430fd.png)
 
 #### G1垃圾回收器
 
@@ -683,9 +724,9 @@ G1的整个堆会被划分成多个大小相等的区域，称之为区Region，
 
 G1垃圾回收有两种方式：
 
- ⚫ 1、年轻代回收（Young GC）
+ 1、年轻代回收（Young GC）
 
- ⚫ 2、混合回收（Mixed GC）
+ 2、混合回收（Mixed GC）
 
 年轻代回收（Young GC），回收Eden区和Survivor区中不用的对象。会导致STW，G1中可以通过参数-XX:MaxGCPauseMillis=n（默认200） 设置每次垃圾回收时的最大暂停时间毫秒数，G1垃圾回收器会尽可能地 保证暂停时间
 
@@ -717,7 +758,9 @@ G1在进行Young GC的过程中会去记录每次垃圾回收时每个Eden区和
 
 内存泄漏（memory leak）：在Java中如果不再使用一个对象，但是该对象依然在GC ROOT的引用链上， **这个对象就不会被垃圾回收器回收，这种情况就称之为内存泄漏。**
 
-少量的内存泄漏可以容忍，但是如果发生持续的内存泄漏，就像滚雪球雪球越滚越大，不管有多大的内存迟早会被消耗完，最终导致的结果就是**内存溢出**。**但是产生内存溢出并不是只有内存泄漏这一种原因**。
+少量的内存泄漏可以容忍，但是如果发生持续的内存泄漏，就像滚雪球雪球越滚越大，不管有多大的内存迟早会被消耗完，最终导致的结果就是**内存溢出**。
+
+**但是产生内存溢出并不是只有内存泄漏这一种原因**。
 
 # JVM参数
 
@@ -727,7 +770,7 @@ G1在进行Young GC的过程中会去记录每次垃圾回收时每个Eden区和
 
  -XX:MaxMetaspaceSize：最大元空间大小
 
- –XX:MetaspaceSize：是到达这个值之后会触发FULLGC
+ –XX:MetaspaceSize：是到达这个值之后会触发FULL GC
 
 -Xss ：虚拟机栈大小
 
@@ -739,4 +782,4 @@ G1在进行Young GC的过程中会去记录每次垃圾回收时每个Eden区和
 
 ‐XX:SurvivorRatio 伊甸园区和幸存者区的大小比例，默认值为8。
 
-‐XX:MaxTenuringThreshold 最大晋升阈值，年龄大于此值之后，会进入老年代。另外JVM有动态年龄判断机 制：将年龄从小到大的对象占据的空间加起来，如果大于survivor区域的50%，然后把等于或大于该年龄的对象， 放入到老年代
+‐XX:MaxTenuringThreshold 最大晋升阈值，年龄大于此值之后，会进入老年代。另外JVM有动态年龄判断机制：将年龄从小到大的对象占据的空间加起来，如果大于survivor区域的50%，然后把等于或大于该年龄的对象， 放入到老年代
