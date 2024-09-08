@@ -54,7 +54,7 @@ i = i++;
 i还是0，i++先把局部变量表中的0复制一个加载到操作数栈，接下来在局部变量表中对i进行+1,最后再将栈中的数（0）取出来覆盖掉局部变量表中i的值，i从1又变成了0；
 ```
 
-![ea989accd6305bb8889c591dc15e67c](../typora_repo/JVM/ea989accd6305bb8889c591dc15e67c.png)
+![ea989accd6305bb8889c591dc15e67c](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082037653.png)
 
 
 
@@ -466,7 +466,7 @@ Java中的对象是否能被回收，是根据对象**是否被引用**来决定
 
 在JDK 1.2版之后提供了SoftReference类来实现软引用，软引用常用于缓存中。
 
-![649341eb067aca131ba490ab065a7e5](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408291406972.png)
+![649341eb067aca131ba490ab065a7e5](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082037577.png)
 
 **软引用的执行过程**如下： 
 
@@ -669,25 +669,25 @@ Java垃圾回收过程会通过单独的GC线程来完成，但是不管使用�
 
 由于垃圾回收器分为年轻代和老年代，**除了G1之外**其他垃圾回收器必须成对组合进行使用。 具体的关系图如下：
 
-![b06a1bd96fc5c23fae5d32f85232115](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408291651945.png)
+![b06a1bd96fc5c23fae5d32f85232115](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082037800.png)
 
 #### 年轻代-Serial垃圾回收器
 
-![12ac50fca3d455fc89a49c9bfaef75f](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202408291730497.png)
+![12ac50fca3d455fc89a49c9bfaef75f](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082036269.png)
 
 #### 老年代-SerialOld垃圾回收器
 
-![aabcdb203a1bb8e51860d02dfb6cf50](../typora_repo/JVM/aabcdb203a1bb8e51860d02dfb6cf50.png)
+![aabcdb203a1bb8e51860d02dfb6cf50](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082036910.png)
 
 
 
 #### 年轻代-ParNew垃圾回收器
 
-![ee8efedc62afcbb2f8c0f390bf00ba0](../typora_repo/JVM/ee8efedc62afcbb2f8c0f390bf00ba0.png)
+![ee8efedc62afcbb2f8c0f390bf00ba0](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082036797.png)
 
 #### 老年代-CMS垃圾回收器
 
-![d06acc5a57ba006c51604647fa5abcf](../typora_repo/JVM/d06acc5a57ba006c51604647fa5abcf.png)
+![d06acc5a57ba006c51604647fa5abcf](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082036221.png)
 
 CMS(Concurrent Mark Sweep)执行步骤： 
 
@@ -720,11 +720,11 @@ CMS(Concurrent Mark Sweep)执行步骤：
 
 #### 年轻代-Parallel Scavenge垃圾回收器
 
-![ea6a6bbffb8f714f850326a1fcfe0b0](../typora_repo/JVM/ea6a6bbffb8f714f850326a1fcfe0b0.png)
+![ea6a6bbffb8f714f850326a1fcfe0b0](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082036543.png)
 
 #### 老年代-Parallel Old垃圾回收器
 
-![c5f0b083b389e4ad953d362762430fd](../typora_repo/JVM/c5f0b083b389e4ad953d362762430fd.png)
+![c5f0b083b389e4ad953d362762430fd](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082036752.png)
 
 #### G1垃圾回收器（jdk9+默认）
 
@@ -765,7 +765,7 @@ G1垃圾回收有两种方式：
 
 ​			所以尽量保证应该用的堆内存有一定多余的空间
 
-![6b8fb5768a3308e6514a771338f5dd8](../typora_repo/JVM/6b8fb5768a3308e6514a771338f5dd8.png)
+![6b8fb5768a3308e6514a771338f5dd8](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409082035275.png)
 
 
 
