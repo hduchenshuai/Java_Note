@@ -1469,11 +1469,7 @@ alt+insert（新建/新增任何东西）
 
   ![fc91c671d182645a28dc11819175669](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202407092341337.png)
 
-<<<<<<< Updated upstream
 ## 二维数组
-=======
-
->>>>>>> Stashed changes
 
 * 二维数组是一个特殊的一维数组，特殊在：这个一维数组中每个元素是一个一维数组
 
@@ -2957,16 +2953,12 @@ class A {
 ## main方法
 
 ```java
-public static void main(String[] args){}
+public static void main(String[] args){ }
 ```
 
 * main方法是JVM调用，所以该方法的访问权限必须是public
 
-<<<<<<< Updated upstream
 * JVM在执行main方法时不必创建对象，所以必须加static
-=======
-* Java虚拟机在执行main方法时不必创建对象，所以必须加static
->>>>>>> Stashed changes
 
 * JVM负责给main方法准备一个String[]一维数组的对象，String[] args作用是接收命令行参数用的
 
