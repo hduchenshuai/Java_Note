@@ -1,3 +1,121 @@
+# 进程与线程
+
+进程 ：
+
+* 资源分配的最小单位
+* 进程就是用来加载指令、管理内存、管理 IO 的 
+* 当一个程序被运行，从磁盘加载这个程序的代码至内存，这时就开启了一个进程。 
+* 进程就可以视为程序的一个实例。
+
+线程 ：
+
+* 最小调度单位
+* 一个进程之内可以分为一到多个线程。
+* 一个线程就是一个指令流，将指令流中的一条条指令以一定的顺序交给 CPU 执行 
+
+
+
+二者对比：
+
+* 进程基本上相互独立的，而线程存在于进程内，是进程的一个子集 
+* 进程拥有共享的资源，如内存空间等，供其内部的线程共享 
+* 进程间通信较为复杂 
+  * 同一台计算机的进程通信称为 IPC（Inter-process communication） 
+  * 不同计算机之间的进程通信，需要通过网络，并遵守共同的协议，例如 HTTP 
+
+* 线程通信相对简单，因为它们共享进程内的内存，一个例子是多个线程可以访问同一个共享变量 
+* 线程更轻量，线程上下文切换成本一般上要比进程上下文切换低
+
+
+
+# Java线程
+
+## 创建和运行线程
+
+### 方法1：Thread类
+
+```java
+//创建线程对象
+Thread t = new Thread("t1"){
+    @Override
+    public void run(){
+        //执行的任务
+    }
+};
+//开启线程
+t1.start();
+```
+
+### 方法2：Runnable接口配合Thread类
+
+把【线程】和【任务】（要执行的代码）分开 
+
+* Thread 代表线程 
+* Runnable 可运行的任务（线程要执行的代码）
+
+```java
+Runnable task = new Runnable() {
+    @Override
+	public void run(){
+     // 要执行的任务
+    }  
+};
+// 创建线程对象
+// 参数1 是任务对象; 参数2 是线程名字，推荐
+Thread t = new Thread(task,"t2");
+// 启动线程
+t2.start(); 
+```
+
+
+
+### Thread 与 Runnable 的关系
+
+方法1 是把线程和任务合并在了一起，方法2 是把线程和任务分开了 
+
+* 用 Runnable 更容易与线程池等高级 API 配合 
+* 用 Runnable 让任务类脱离了 Thread 继承体系，更灵活
+
+
+
+### 方法3：FutureTask类配合Thread类
+
+FutureTask 能够接收 Callable 类型的参数，用来处理有返回结果的情况
+
+```java
+FutureTask<Integer> task = new FeatureTask<>(() ->{
+    //要执行的任务
+    return 100;//有返回值
+});
+new Thread(task,"t3").start();
+
+// 主线程阻塞，同步等待 task 执行完毕的结果
+Integer result = task3.get();
+```
+
+
+
+## 查看进程线程的方法
+
+* linux 
+  * `ps -fe` 查看所有进程 
+  * `ps -fT -p <PID>`查看某个进程（PID）的所有线程 
+  * `kill` 杀死进程 
+  * `top` 按大写 H 切换是否显示线程 
+  * `top -H -p <PID>` 查看某个进程（PID）的所有线程
+* Java （在IDEA的Terminal输入指令）
+  * `jps` 命令查看所有 Java 进程 
+  * `jstack <PID>` 查看某个 Java 进程（PID）的所有线程状态 
+  * `jconsole` 来查看某个 Java 进程中线程的运行情况（图形界面）
+
+## 栈与栈帧
+
+JVM中的栈内存是给谁用的呢？其实就是线程，每个线程启动后，虚拟机就会为其分配一块栈内存。 
+
+* 每个栈由多个栈帧（Frame）组成，对应着每次方法调用时所占用的内存 
+
+* 每个线程只能有**一个活动栈帧**，对应着当前正在执行的那个方法
+
 变量的线程安全分析
 
 成员变量和静态变量是否线程安全？  
@@ -7,16 +125,295 @@
   * 如果只有读操作，则线程安全 
   * 如果有读写操作，则这段代码是临界区，需要考虑线程安全  
 
-局部变量是否线程安全？  
+
+
+## 线程上下文切换 
+
+因为以下一些原因导致 cpu 不再执行当前的线程，转而执行另一个线程的代码 ：
+
+* 线程的 cpu 时间片用完
+* 垃圾回收 
+* 有更高优先级的线程需要运行 
+* 线程自己调用了 sleep、yield、wait、join、park、synchronized、lock 等方法 
+
+当 上下文切换 发生时，需要由操作系统保存当前线程的状态，并恢复另一个线程的状态，Java 中对应的概念 就是程序计数器（Program Counter Register），它的作用是记住下一条 jvm 指令的执行地址，是线程私有的
+
+* 状态包括程序计数器、虚拟机栈中每个栈帧的信息，如局部变量、操作数栈、返回地址等
+* 上下文切换 频繁发生会影响性能
+
+## Thread中的方法
+
+| 方法名           | static | 功能说明                                                     | 注意                                                         |
+| ---------------- | ------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| start()          |        | 启动一个新线 程，在新的线程运行 run 方法中的代码             | start 方法只是让线程进入就绪，里面代码不一定立刻 运行（CPU 的时间片还没分给它）。每个线程对象的 start方法只能调用一次，如果调用了多次会出现 IllegalThreadStateException |
+| run()            |        | 新线程启动后会 调用的方法                                    | 如果在构造 Thread 对象时传递了 Runnable 参数，则 线程启动后会调用 Runnable 中的 run 方法，否则默 认不执行任何操作。但可以创建 Thread 的子类对象， 来覆盖默认行为 |
+| join()           |        | 使其他线程等待调用该方法的线程运行结束                       |                                                              |
+| join(long n)     |        | 等待线程运行结 束,最多等待 n 毫秒                            |                                                              |
+| getId()          |        | 获取线程长整型 的 id                                         | id 唯一                                                      |
+| setName(String)  |        | 修改线程名                                                   |                                                              |
+| getName()        |        | 获取线程名                                                   |                                                              |
+| getPriority()    |        | 获取线程优先级                                               |                                                              |
+| setPriority(int) |        | 修改线程优先级                                               | java中规定线程优先级是1~10 的整数，较大的优先级能提高该线程被 CPU 调度的机率 |
+| getState()       |        | 获取线程状态                                                 | Java 中线程状态是用 6 个 enum 表示，分别为： NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED |
+| isInterrupted()  |        | 判断是否被打 断                                              | 不会清除 打断标记                                            |
+| interrupt()      |        | 打断线程                                                     | 如果被打断线程正在 sleep，wait，join 会导致被打断的线程抛出 InterruptedException，并清除打断标记 ；如果打断的正在运行的线程，则会设置打断标记 ；park 的线程被打断，也会设置 打断标记 |
+| interrupted()    | static | 判断当前线程是 否被打断                                      | 会清除 打断标记                                              |
+| currentThread()  | static | 获取当前正在执 行的线程                                      |                                                              |
+| sleep(long n)    | static | 让当前执行的线程休眠n毫秒，休眠时让出 cpu 的时间片给其它线程 | 1. 调用 sleep 会让当前线程从 Running 进入 Timed Waiting 状态（阻塞） 2. 其它线程可以使用 interrupt 方法打断正在睡眠的线程，这时 sleep 方法会抛出 InterruptedException 3. 睡眠结束后的线程未必会立刻得到执行 4. 建议用 TimeUnit 的 sleep 代替 Thread 的 sleep 来获得更好的可读性 |
+| yield()          | static | 提示线程调度器让出当前线程对 CPU的使用                       | 1.调用 yield 会让当前线程从 Running 进入 Runnable 就绪状态，然后调度执行其它线程 2. 具体的实现依赖于操作系统的任务调度器 |
+
+## 守护线程
+
+默认情况下，Java 进程需要等待**所有**线程都运行结束，才会结束。有一种特殊的线程叫做守护线程，只要其它非守 护线程运行结束了，即使守护线程的代码没有执行完，也会强制结束。
+
+```java
+// 设置该线程为守护线程
+t1.setDaemon(true);
+t1.start();
+```
+
+注意：
+
+* 只有在启动守护线程**之前**将其设置为守护线程才有效
+* 垃圾回收器线程就是一种守护线程
+
+
+
+## 线程生命周期以及状态转换
+
+* 线程生命周期指的是：从线程对象新建，到最终线程死亡的整个过程。
+* 线程生命周期包括七个重要阶段：
+  * 新建状态（NEW）
+  * **就绪状态（RUNNABLE）**
+  * **运行状态（RUNNABLE）**
+  * 超时等待状态（TIMED_WAITING）
+  * 等待状态（WAITING）
+  * 阻塞状态（BLOCKED）
+  * 死亡状态（TERMINATED）
+
+![7aeea772041a235159f91d1bf7dd4ec](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409160053697.png)
+
+注意：
+
+* 在运行状态时，执行到**wait()无参方法**，则会进入无期限的等待，进入等待状态，放弃占有的时间片，当被唤醒时，因为把锁也丢了要重新竞争锁，故由等待状态进入阻塞状态，获得锁后，再进入就绪状态：
+
+  **运行状态—>等待状态—>阻塞状态—>就绪状态**
+
+* 在运行状态时，执行到**wait(时间)有参方法**，则会进入计时等待，进入超时等待状态，放弃占有的时间片，当被唤醒或者计时结束时，由等待状态进入阻塞状态，获得锁后，再进入就绪状态：
+
+  **运行状态—>超时等待状态—>阻塞状态—>就绪状态**
+
+  
+
+
+
+# 共享模型之管程
+
+## 临界区 
+
+* 一个程序运行多个线程本身是没有问题的 
+* 问题出在多个线程访问共享资源 
+  * 多个线程读共享资源其实也没有问题
+  * 在多个线程对共享资源**读写操作时发生指令交错**，就会出现问题 
+* 一段代码块内如果存在**对共享资源的多线程读写操作**，称这段代码块为**临界区** 
+
+
+
+## 竞态条件 
+
+多个线程在临界区内执行，由于**代码的执行序列**不同而导致结果无法预测，称之为发生了竞态条件
+
+
+
+## synchronized 解决方案
+
+为了避免临界区的竞态条件发生，有多种手段可以达到目的。
+
+* 阻塞式的解决方案：synchronized，Lock 
+* 非阻塞式的解决方案：原子变量 
+
+
+
+synchronized 俗称【对象锁】，它采用**互斥**的方式让同一 时刻至多只有一个线程能持有【对象锁】，其它线程再想获取这个【对象锁】时就会阻塞住。这样就能保证拥有锁的线程可以安全的执行临界区内的代码，不用担心线程上下文切换 
+
+## 互斥与同步
+
+注意 ：
+
+* 虽然 java 中互斥和同步都可以采用 synchronized 关键字来完成，但它们还是有区别的： 
+  * 互斥是保证临界区的竞态条件发生，同一时刻只能有一个线程执行临界区代码 
+  * 同步是由于线程执行的先后、顺序不同、需要一个线程等待其它线程运行到某个点
+
+
+
+
+
+## synchronized
+
+```java
+static int counter = 0;
+static final Object room = new Object();
+
+public static void main(String[] args) throws InterruptedException {
+    
+     Thread t1 = new Thread(() -> {
+         for (int i = 0; i < 5000; i++) {
+             synchronized (room) {
+             	counter++;
+         	 }
+     	 }
+     }, "t1");
+    
+     Thread t2 = new Thread(() -> {
+         for (int i = 0; i < 5000; i++) {
+             synchronized (room) {
+             	counter--;
+             }
+         }
+     }, "t2");
+    
+     t1.start();
+     t2.start();
+     t1.join();
+     t2.join();
+     log.debug("{}",counter);
+}
+```
+
+synchronized 实际是用**对象锁保证了临界区内代码的原子性**，临界区内的代码对外是不可分割的，不会被线程切换所打断。
+
+* 如果把 synchronized(obj) 放在 for 循环的外面，如何理解？
+  * -- 原子性 ：那么5000次for循环被视为不可分割的原子操作集
+* 如果 t1 synchronized(obj1) 而 t2 synchronized(obj2) 会怎样运作？
+  * -- 锁对象的唯一性
+  * 锁对象需要被多个线程共享，且仅此一份
+
+
+
+**面向对象改进**
+
+```java
+class Room {
+    //共享变量
+    private int counter = 0;
+    
+    public synchronized void increment() {
+        counter++;
+    }
+
+    public synchronized void decrement() {
+        counter--;
+    }
+    
+	//注意：get方法也要加锁
+    public synchronized int getCounter() {
+        return counter;
+    }
+}
+
+public class Test {
+    public static void main(String[] args) throws InterruptedException {
+        //这里room实例就一个，synchronized加在实例方法上，锁的就是实例对象，这里锁有效；如果是两个实例被两个线程分别使用，则锁失效
+        Room room = new Room();
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 5000; i++) {
+                room.increment();
+            }
+        }, "t1");
+
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 5000; i++) {
+                room.decrement();
+            }
+        }, "t2");
+
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        log.debug("{}", room.getCounter());
+    }
+}
+```
+
+
+
+## 方法上的 synchronized
+
+* **实例方法**
+
+```java
+class Test{
+	public synchronized void test() {}
+}
+
+等价于
+
+class Test{
+	public void test() {
+		synchronized(this) {}
+    }
+}
+```
+
+注意：
+
+1. 同步实例方法是在实例上进行锁定，而不是在整个类上进行锁定，因此不同的实例可以并发执行同步实例方法，即锁失效，无互斥效果
+
+2. 在使用同步实例方法时，同一对象上的其它同步方法会被阻塞，但非同步方法不会。
+
+3. 同步实例方法中锁定的是当前对象，如果有多个对象则不会阻塞对其它对象的访问。
+
+   
+
+* **静态方法**
+
+```java
+class Test{
+	public synchronized static void test() {}
+}
+
+等价于
+    
+class Test{
+	public static void test() {
+ 		synchronized(Test.class) {}
+	}
+}
+```
+
+
+
+注意：
+
+1. 凡是在静态方法上添加synchronized，线程执行时会找类锁，记住：一个类不管创建了多少个对象，类只有一个，类锁也只有一把锁，通常静态方法上添加synchronized是为了保护静态变量的安全。
+2. 如果一个是同步实例方法，一个是同步静态方法，不论是同个实例对象去执行两个方法还是两个不同实例对象分别去执行两个方法，两个线程都不会互斥，因为实例方法锁的是实例对象，静态方法锁的是类对象，两个对象不一样
+3. 如果两个都是同步静态方法，两个同类的不同实例对象分别去执行两个方法，两个线程是互斥的，因为类对象就一个，不论是不是相同实例，只要是同一个类，都是共用一个类对象，即一把锁
+
+
+
+
+
+## **变量的线程安全分析** 
+
+实例变量和静态变量是否线程安全？ 
+
+* 如果它们没有共享，则线程安全 
+
+* 如果它们被共享了，根据它们的状态是否能够改变，又分两种情况 
+  * 如果只有**读**操作，则线程安全 
+  * 如果有**读写**操作，则这段代码是临界区，需要考虑线程安全 
+
+局部变量是否线程安全？ 
 
 * 局部变量是线程安全的 
-* 但局部变量引用的对象则未必 
-  * 如果该对象没有逃离方法的作用访问，它是线程安全的
+* 但局部变量**引用的对象**则未必 
+  * 如果该对象没有逃离方法的作用访问，它是线程安全的 
   * 如果该对象逃离方法的作用范围，需要考虑线程安全
 
 
 
-常见线程安全类
+## 常见线程安全类
 
 * String 
 * Integer
@@ -26,8 +423,40 @@
 *  Hashtable 
 * java.util.concurrent 包下的类 
 
-这里说它们是线程安全的是指，多个线程调用它们同一个实例的某个方法时，是线程安全的。也可以理解为
+这里说它们是线程安全的是指，多个线程调用它们**同一个实例**的某个方法时，是线程安全的。也可以理解为
 
 * 它们的每个方法是原子的 
 
 * 但注意它们多个方法的组合不是原子的
+
+
+
+
+
+## ReentrantLock
+
+相对于 synchronized 它具备如下特点 ：
+
+* 可中断 (指其他线程破坏当前线程的blocking状态)
+* 可以设置超时时间 
+* 可以设置为公平锁 
+* 支持多个条件变量
+
+与 synchronized 一样，都支持可重入
+
+
+
+基本语法：
+
+```java
+//获取锁
+ReentrantLock lock = new ReentrantLock();
+lock.lock();//该行代码放在try外面和里面作用一样，无区别
+try{
+    //临界区
+}finally{
+    //释放锁
+    lock.unlock();
+}
+```
+
