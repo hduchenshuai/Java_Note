@@ -437,7 +437,7 @@ class Test{
 
 相对于 synchronized 它具备如下特点 ：
 
-* 可中断 (指其他线程破坏当前线程的blocking状态)
+* 可中断 (指其他线程破坏当前线程的blocking状态，即在阻塞队列等锁的状态)
 * 可以设置超时时间 
 * 可以设置为公平锁 
 * 支持多个条件变量
@@ -451,6 +451,7 @@ class Test{
 ```java
 //获取锁
 ReentrantLock lock = new ReentrantLock();
+//该处的lock就相当于是synchronized中的monitor，即lock就是锁本身
 lock.lock();//该行代码放在try外面和里面作用一样，无区别
 try{
     //临界区
@@ -459,4 +460,368 @@ try{
     lock.unlock();
 }
 ```
+
+
+
+### 可重入
+
+可重入是指**同一个线程**如果首次获得了这把锁，那么因为它是这把锁的拥有者，因此有权利再次获取这把锁 
+
+如果是不可重入锁，那么第二次获得锁时，自己也会被锁挡住
+
+```java
+static ReentrantLock lock = new ReentrantLock();
+
+public static void main(String[] args) {
+ 	method1();
+}
+
+public static void method1() {
+     lock.lock();
+     try {  
+         log.debug("execute method1");
+         method2();
+     } finally {
+     	 lock.unlock();
+     }
+}
+
+public static void method2() {
+ 	lock.lock();
+ 	try {
+ 		log.debug("execute method2");
+		method3();
+ 	} finally {
+		lock.unlock();
+	}
+}
+
+public static void method3() {
+ 	lock.lock();
+ 	try {
+ 		log.debug("execute method3");
+ 	} finally {
+ 		lock.unlock();
+ 	}
+}
+```
+
+输出：
+
+```java
+execute method1
+execute method2
+execute method3 
+```
+
+
+
+### 可打断（lockInterruptibly()实现）
+
+注意如果是不可中断模式（lock.lock())，那么即使使用了 interrupt 也不会让等待中断
+
+```java
+ReentrantLock lock = new ReentrantLock();
+
+Thread t1 = new Thread(() -> {
+	log.debug("启动...");
+ 	try {
+        //如果没有竞争那么此方法就会获取lock对象锁
+        //如果有竞争就进入阻塞队列，可以被其他线程用interruput方法打断
+ 		lock.lockInterruptibly();
+ 	} catch (InterruptedException e) {
+ 		e.printStackTrace();
+ 		log.debug("等锁的过程中被打断");
+ 		return;
+ 	}
+ 	try {
+ 		log.debug("获得了锁");
+ 	} finally {
+ 		lock.unlock();
+ 	}
+}, "t1");
+
+lock.lock();//主线程在t1.start()前先上锁了
+log.debug("获得了锁");
+t1.start();
+
+try {
+ sleep(1);
+ t1.interrupt();//在主线程去打断t1的blocking状态
+ log.debug("执行打断");
+} finally {
+ 	lock.unlock();
+}
+```
+
+```
+18:02:40.520 [main] 获得了锁
+18:02:40.524 [t1] 启动...
+18:02:41.530 [main] 执行打断
+18:02:41.532 [t1] 等锁的过程中被打断
+```
+
+
+
+### 锁超时(tryLock()实现)
+
+```java
+public class Test {
+    private static ReentrantLock lock = new ReentrantLock();
+    public static void main(String[] args) {
+        Thread t1 = new Thread(() -> {
+            log.debug("尝试获得锁");
+            try {
+                //lock.tryLock()无参表示获取不到锁立即返回false
+                if (! lock.tryLock(2, TimeUnit.SECONDS)) {
+                    log.debug("获取不到锁");
+                    return;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                log.debug("获取不到锁");
+                return;
+            }
+            try {
+                log.debug("获得到锁");
+            } finally {
+                lock.unlock();
+            }
+        }, "t1");
+
+        lock.lock();
+        log.debug("获得到锁");
+        t1.start();
+        sleep(1);
+        log.debug("释放了锁");
+        lock.unlock();
+    }
+}
+```
+
+```
+18:19:40.537 [main] c.TestTimeout - 获得了锁
+18:19:40.544 [t1] c.TestTimeout - 启动...
+18:19:41.547 [t1] c.TestTimeout - 获取等待 1s 后失败，返回
+```
+
+### 公平锁
+
+ReentrantLock 默认是不公平的
+
+```java
+ReentrantLock lock = new ReentrantLock(ture);//传入true即可设置成公平锁
+```
+
+公平锁可以解决解饿问题，但一般没有必要（tryLock即可解决），会降低并发度，后面分析原理时会讲解
+
+### 条件变量
+
+synchronized 中也有条件变量，当条件不满足时进入 waitSet 等待 
+
+ReentrantLock 的条件变量比 synchronized 强大之处在于，它是支持多个条件变量的，这就好比
+
+* synchronized 是那些不满足条件的线程都在一间休息室等消息 
+* 而 ReentrantLock 支持多间休息室，有专门等烟的休息室、专门等早餐的休息室、唤醒时也是按休息室来唤醒
+
+
+
+使用要点： 
+
+* await 前需要获得锁 
+* await 执行后，会释放锁，进入 conditionObject 等待 
+* await 的线程被唤醒（或打断、或超时）取重新竞争 lock 锁 
+* 竞争 lock 锁成功后，从 await 后继续执行
+
+```java
+//此代码非正式代码，仅供讲解
+public class Test {
+    static ReentrantLock lock = new ReentrantLock();
+
+    public static void main(String[] args) {
+        Condition condition1 = lock.newCondition(); //创建"休息室"(条件变量),可创建多个
+        Condition condition2 = lock.newCondition();
+        lock.lock();   // await 前需要获得锁 
+        condition1.await(); //进入condition1休息等待
+        
+        //其他线程调用
+        condition1.signal(); //唤醒condition1中的一个线程
+        condition1.signalAll();
+    }
+}
+```
+
+
+
+### *交替打印
+
+Q：用三个线程分别交替打印打印abc，循环5次
+
+A：
+
+* synchronized + wait + notify 实现
+
+```java
+public class Main {
+    static boolean mark1 = true;
+    static boolean mark2 = false;
+    static boolean mark3 = false;
+    static  Object lock = new Object();
+
+    public static void main(String[] args) {
+        Thread t1 = new Thread(()->{
+            synchronized (lock){
+                for (int i = 0; i < 5; i++) {
+                    while(!mark1){
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    System.out.print("a");
+                    mark1 = false;
+                    mark2 = true;
+                    mark3 = false;
+                    lock.notifyAll();
+                }
+            }
+
+        });
+        Thread t2 = new Thread(()->{
+            synchronized (lock){
+                for (int i = 0; i < 5; i++) {
+                    while(!mark2){
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    System.out.print("b");
+                    mark2 = false;
+                    mark3 = true;
+                    mark1 = false;
+                    lock.notifyAll();
+                }
+            }
+
+        });
+        Thread t3 = new Thread(()->{
+            synchronized (lock){
+                for (int i = 0; i < 5; i++) {
+                    while(!mark3){
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    System.out.print("c");
+                    mark3 = false;
+                    mark1 = true;
+                    mark2 = false;
+                    lock.notifyAll();
+                }
+            }
+
+        });
+        
+        t1.start();
+        t2.start();
+        t3.start();
+    }
+
+}
+```
+
+
+
+* ReentrantLock + await + signal 实现
+
+  * 单condition
+
+    ```java
+    public class Main {
+        static boolean mark1 = true;
+        static boolean mark2 = false;
+        static boolean mark3 = false;
+        static ReentrantLock lock = new ReentrantLock();
+    
+        public static void main(String[] args) {
+    
+            Condition condition = lock.newCondition();
+    
+            new Thread(()->{
+                lock.lock();
+                try {
+                    for (int i = 0; i < 5; i++) {
+                        while (!mark1){
+                            condition.await();
+                        }
+                        System.out.print("a");
+                        mark1 = false;
+                        mark2 = true;
+                        mark3 = false;
+                        condition.signalAll();
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    lock.unlock();
+                }
+            },"t1").start();
+    
+            new Thread(()->{
+                lock.lock();
+                try {
+                    for (int i = 0; i < 5; i++) {
+                        while (!mark2){
+                            condition.await();
+                        }
+                        System.out.print("b");
+                        mark1 = false;
+                        mark2 = false;
+                        mark3 = true;
+                        condition.signalAll();
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    lock.unlock();
+                }
+            },"t2").start();
+    
+            new Thread(()->{
+                lock.lock();
+                try {
+                    for (int i = 0; i < 5; i++) {
+                        while (!mark3){
+                            condition.await();
+                        }
+                        System.out.print("c");
+                        mark1 = true;
+                        mark2 = false;
+                        mark3 = false;
+                        condition.signalAll();
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    lock.unlock();
+                }
+            },"t3").start();
+        }
+    }
+    ```
+
+    
+
+  * 多个condition + 面向对象
+
+    ![image-20240917015819931](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409170158242.png)
+
+    
+
+  
 

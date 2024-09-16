@@ -1318,15 +1318,10 @@ Ctrl + B		//定位方法
 alt+insert（新建/新增任何东西）
 退出任何窗口ESC
 编写源码的窗口最大化ctrl+shift+F12
-
-
-
 打开Project窗口alt+1
 查找某个类：敲两次shift，选择classes，输入类名
 切换选项卡：alt + 左右方向键
-
 删除一行ctrl+y
-
 在一个类当中查找方法ctrl+F12
 生成for循环：fori
 自动生成if语句.if
