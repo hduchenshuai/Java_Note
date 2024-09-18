@@ -2,14 +2,14 @@
 
 进程 ：
 
-* 资源分配的最小单位
+* 系统进行**资源分配和调度**的最小单位
 * 进程就是用来加载指令、管理内存、管理 IO 的 
 * 当一个程序被运行，从磁盘加载这个程序的代码至内存，这时就开启了一个进程。 
 * 进程就可以视为程序的一个实例。
 
 线程 ：
 
-* 最小调度单位
+* 系统进行**运算调度**（或程序执行的）的最小单位
 * 一个进程之内可以分为一到多个线程。
 * 一个线程就是一个指令流，将指令流中的一条条指令以一定的顺序交给 CPU 执行 
 
@@ -25,6 +25,27 @@
 
 * 线程通信相对简单，因为它们共享进程内的内存，一个例子是多个线程可以访问同一个共享变量 
 * 线程更轻量，线程上下文切换成本一般上要比进程上下文切换低
+
+
+
+## 并发与并行
+
+* 并发：**在同一时间段，多个指令在单个CPU上交替执行**；使用单核CPU的时候，同一时刻只能有一条指令执行，但多个指令被快速的轮换执行，使得在宏观上具有多个指令同时执行的效果，但在微观上并不是同时执行的，只是把时间分成若干端，使多个指令快速交替的执行。**（微观串行，宏观并行）**
+
+* 并行： **在同一时刻，多个指令在多个CPU上同时进行**；使用多核CPU的时候，同一时刻，有多条指令在多个CPU上同时执行**（微观、宏观皆并行）**
+
+
+
+不管并发还是并行，都提高了程序对CPU资源的利用率，最大限度地利用CPU资源，而我们使用多线程的目的就是为了提高CPU资源的利用率。
+
+
+
+## 同步与异步
+
+以调用方角度来讲，如果
+
+* 需要等待结果返回，才能继续运行就是同步
+* 不需要等待结果返回，就能继续运行就是异步
 
 
 
@@ -48,7 +69,7 @@ t1.start();
 
 ### 方法2：Runnable接口配合Thread类
 
-把【线程】和【任务】（要执行的代码）分开 
+把【线程】和【任务】（要执行的代码）分开
 
 * Thread 代表线程 
 * Runnable 可运行的任务（线程要执行的代码）
@@ -67,7 +88,13 @@ Thread t = new Thread(task,"t2");
 t2.start(); 
 ```
 
+lambda简化：
 
+```java
+new Thread(() -> {
+    System.out.println(Thread.currentThread().getName() + "c");
+}, "t1").start();
+```
 
 ### Thread 与 Runnable 的关系
 
@@ -78,9 +105,46 @@ t2.start();
 
 
 
-### 方法3：FutureTask类配合Thread类
+### 方法3：实现Callable接口 + FutureTask类配合Thread类
 
 FutureTask 能够接收 Callable 类型的参数，用来处理有返回结果的情况
+
+```java
+public class CreateThread03 {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        //3.创建MyCallable对象
+        MyCallable myCallable = new MyCallable();
+        //4.创建Future接口的实现类FutureTask的对象，将MyCallable对象作为构造方法的参数
+        FutureTask<String> ft = new FutureTask<>(myCallable);
+        //5.创建Thread类的对象，将FutureTask对象作为构造方法的参数
+        Thread thread1 = new Thread(ft);
+        Thread thread2 = new Thread(ft);
+        //6.启动线程
+        thread1.start();
+        thread2.start();
+        //7.调用FutureTask对象的get()方法，可以获取线程结束之后的结果
+        String result = ft.get();
+        System.out.println(result);
+	}
+}
+//1.定义一个类MyCallable实现Callable接口
+class MyCallable implements Callable<String>{
+    //2.重写call()方法
+    @Override
+    public String call() throws Exception {
+        System.out.println(Thread.currentThread().getName());
+        return "ok";
+    }
+}
+```
+
+```
+Thread-0
+ok
+注意：只会有一个线程实现任务
+```
+
+lambda简化：
 
 ```java
 FutureTask<Integer> task = new FeatureTask<>(() ->{
@@ -116,14 +180,7 @@ JVM中的栈内存是给谁用的呢？其实就是线程，每个线程启动�
 
 * 每个线程只能有**一个活动栈帧**，对应着当前正在执行的那个方法
 
-变量的线程安全分析
 
-成员变量和静态变量是否线程安全？  
-
-* 如果它们没有共享，则线程安全 
-* 如果它们被共享了，根据它们的状态是否能够改变，又分两种情况 
-  * 如果只有读操作，则线程安全 
-  * 如果有读写操作，则这段代码是临界区，需要考虑线程安全  
 
 
 
@@ -141,12 +198,16 @@ JVM中的栈内存是给谁用的呢？其实就是线程，每个线程启动�
 * 状态包括程序计数器、虚拟机栈中每个栈帧的信息，如局部变量、操作数栈、返回地址等
 * 上下文切换 频繁发生会影响性能
 
+
+
 ## Thread中的方法
+
+### 常见方法概览
 
 | 方法名           | static | 功能说明                                                     | 注意                                                         |
 | ---------------- | ------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| start()          |        | 启动一个新线 程，在新的线程运行 run 方法中的代码             | start 方法只是让线程进入就绪，里面代码不一定立刻 运行（CPU 的时间片还没分给它）。每个线程对象的 start方法只能调用一次，如果调用了多次会出现 IllegalThreadStateException |
-| run()            |        | 新线程启动后会 调用的方法                                    | 如果在构造 Thread 对象时传递了 Runnable 参数，则 线程启动后会调用 Runnable 中的 run 方法，否则默 认不执行任何操作。但可以创建 Thread 的子类对象， 来覆盖默认行为 |
+| start()          |        | 启动一个新线 程，在新的线程运行 run 方法中的代码             | start 方法只是让线程进入就绪，里面代码不一定立刻 运行（CPU 的时间片还没分给它）。每个线程对象的 start方法**只能调用一次**，如果调用了多次会出现 IllegalThreadStateException |
+| run()            |        | 新线程启动后会 调用的方法                                    | 如果在构造 Thread 对象时传递了 Runnable 参数，则 线程启动后会调用 Runnable 中的 run 方法，否则默认不执行任何操作。但可以创建 Thread 的子类对象， 来覆盖默认行为 |
 | join()           |        | 使其他线程等待调用该方法的线程运行结束                       |                                                              |
 | join(long n)     |        | 等待线程运行结 束,最多等待 n 毫秒                            |                                                              |
 | getId()          |        | 获取线程长整型 的 id                                         | id 唯一                                                      |
@@ -156,11 +217,46 @@ JVM中的栈内存是给谁用的呢？其实就是线程，每个线程启动�
 | setPriority(int) |        | 修改线程优先级                                               | java中规定线程优先级是1~10 的整数，较大的优先级能提高该线程被 CPU 调度的机率 |
 | getState()       |        | 获取线程状态                                                 | Java 中线程状态是用 6 个 enum 表示，分别为： NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED |
 | isInterrupted()  |        | 判断是否被打 断                                              | 不会清除 打断标记                                            |
-| interrupt()      |        | 打断线程                                                     | 如果被打断线程正在 sleep，wait，join 会导致被打断的线程抛出 InterruptedException，并清除打断标记 ；如果打断的正在运行的线程，则会设置打断标记 ；park 的线程被打断，也会设置 打断标记 |
+| interrupt()      |        | 打断线程                                                     | 如果被打断线程正在 sleep，wait，join 会导致被打断的线程抛出 InterruptedException，并清除打断标记 （false)；如果打断的正在运行的线程，则会设置打断标记 ；park 的线程被打断，也会设置 打断标记 |
 | interrupted()    | static | 判断当前线程是 否被打断                                      | 会清除 打断标记                                              |
 | currentThread()  | static | 获取当前正在执 行的线程                                      |                                                              |
 | sleep(long n)    | static | 让当前执行的线程休眠n毫秒，休眠时让出 cpu 的时间片给其它线程 | 1. 调用 sleep 会让当前线程从 Running 进入 Timed Waiting 状态（阻塞） 2. 其它线程可以使用 interrupt 方法打断正在睡眠的线程，这时 sleep 方法会抛出 InterruptedException 3. 睡眠结束后的线程未必会立刻得到执行 4. 建议用 TimeUnit 的 sleep 代替 Thread 的 sleep 来获得更好的可读性 |
 | yield()          | static | 提示线程调度器让出当前线程对 CPU的使用                       | 1.调用 yield 会让当前线程从 Running 进入 Runnable 就绪状态，然后调度执行其它线程 2. 具体的实现依赖于操作系统的任务调度器 |
+
+### start()与run()
+
+* run()
+  * 就是普通方法，封装了要被线程执行的代码
+  * 可以被调用多次; 
+  * `run()`方法不结束，main方法是无法继续执行的
+  * 在主线程中创建了一个线程t，调用`t.run()`其实是主线程在运行
+* start()
+  * 用来启动线程，底层自动调用run方法，start方法**只能被调用一次**
+  * `start()`瞬间就会结束，原因这个方法的作用是：启动一个新的线程，只要新线程启动成功了，`start()`就结束了
+
+
+
+### sleep()与yield()
+
+**sleep**
+
+1. 调用 sleep 会让当前线程从 *Running* 进入 *Timed Waiting* 状态（阻塞）
+2. 其它线程可以使用 interrupt 方法打断正在睡眠的线程，这时 sleep 方法会抛出 InterruptedException
+3. 睡眠结束后的线程未必会立刻得到执行
+4. 建议用 TimeUnit 的 sleep 代替 Thread 的 sleep 来获得更好的可读性
+
+**yield**
+
+1. 调用 yield 会让当前线程从 *Running* 进入 *Runnable* 就绪状态，然后调度执行其它线程
+2. 具体的实现依赖于操作系统的任务调度器
+
+
+
+###  interrupt()
+
+
+
+
 
 ## 守护线程
 
@@ -396,7 +492,7 @@ class Test{
 
 ## **变量的线程安全分析** 
 
-实例变量和静态变量是否线程安全？ 
+**实例变量**和**静态变量**是否线程安全？ 
 
 * 如果它们没有共享，则线程安全 
 
@@ -404,7 +500,11 @@ class Test{
   * 如果只有**读**操作，则线程安全 
   * 如果有**读写**操作，则这段代码是临界区，需要考虑线程安全 
 
-局部变量是否线程安全？ 
+**临界区：对共享变量有读写操作的代码段**
+
+
+
+**局部变量**是否线程安全？ 
 
 * 局部变量是线程安全的 
 * 但局部变量**引用的对象**则未必 
