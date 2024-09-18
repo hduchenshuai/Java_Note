@@ -819,8 +819,63 @@ public class Main {
 
   * 多个condition + 面向对象
 
-    ![image-20240917015819931](https://cdn.jsdelivr.net/gh/hduchenshuai/PicGo_Save/picgo/202409170158242.png)
-
+    ```java
+    public class Main {
+        public static void main(String[] args) throws InterruptedException {
+            myReentrantLock lock = new myReentrantLock(5);
+            Condition a = lock.newCondition();
+            Condition b = lock.newCondition();
+            Condition c = lock.newCondition();
+            new Thread(() -> {
+                lock.print("a", a, b);
+            }, "t1").start();
+            new Thread(() -> {
+                lock.print("b", b, c);
+            }, "t2").start();
+            new Thread(() -> {
+                lock.print("c", c, a);
+            }, "t3").start();
+    
+            /**
+             * 这里让主线程睡眠一会是保证三个线程都启动后分别进入到了各自的“休息室”，
+             * 然后都各自释放了锁（await释放的），确保主线程能获得到锁
+             * 假使让主线程与三个线程同时竞争锁，一旦主线程没竞争到锁，
+             * 则无法执行a.signal(),导致所有线程均在各自“休息室”死等，造成死锁
+             */
+            Thread.sleep(1000);
+            lock.lock();
+            try {
+                a.signal();
+            } finally {
+                lock.unlock();
+            }
+        }
+    }
+    class myReentrantLock extends ReentrantLock {
+        private int loopNumber;
+    
+        public myReentrantLock(int loopNumber) {
+            this.loopNumber = loopNumber;
+        }
+        public void print(String str, Condition current, Condition next) {
+            for (int i = 0; i < loopNumber; i++) {
+                lock();
+                try {
+                    current.await();
+                    System.out.println(Thread.currentThread().getName() + ": " + str);
+                    next.signal();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    unlock();
+                }
+            }
+        }
+    }
+    ```
+    
+    
+    
     
 
 
@@ -848,3 +903,70 @@ volatile 可以保证共享变量的**可见性**和**有序性**
 
 volatile 体现的实际就是可见性，它保证的是在多个线程之间，一个线程对 volatile 变量的修改对另一个（其他）线程可见， 不能保证原子性，**仅用在一个写线程，多个读线程的情况**
 
+
+
+# 共享模型之工具
+
+## 线程池
+
+## JUC
+
+### AQS
+
+全称是 AbstractQueuedSynchronizer，是**阻塞式锁**和**相关的同步器工具**的框架，是一个抽象类
+
+特点： 
+
+* 用 state 属性来表示资源的状态（分独占模式和共享模式），子类需要定义如何维护这个状态，控制如何获取锁和释放锁 
+  * getState - 获取 state 状态 
+  * setState - 设置 state 状态 
+  * compareAndSetState - cas 机制设置 state 状态 
+  * 独占模式是只有一个线程能够访问资源，而共享模式可以允许多个线程访问资源 
+* 提供了基于 FIFO 的等待队列，类似于 Monitor 的 EntryList 
+* 条件变量来实现等待、唤醒机制，支持多个条件变量，其中单个条件变量类似于 Monitor 的 WaitSet
+
+
+
+子类主要实现这样一些方法（默认抛出 UnsupportedOperationException） 
+
+* tryAcquire 
+* tryRelease 
+* tryAcquireShared 
+* tryReleaseShared 
+* isHeldExclusively
+
+
+
+
+
+### CopyOnWriteArrayList
+
+CopyOnWriteArraySet 是它的马甲 
+
+底层实现采用了 **写入时拷贝** 的思想，**增删改**操作会将底层数组拷贝一份，更改操作在新数组上执行，这时不影响其它线程的并发读，读写分离（支持**读-读**并发、**读-写**并发，但**不**支持 写-写并发）。 以新增为例：
+
+```java
+public boolean add(E e) {
+	synchronized (lock) {
+         // 获取旧的数组
+         Object[] elements = getArray();//getArray()：return array；
+         int len = elements.length;
+         // 拷贝新的数组（这里是比较耗时的操作，但不影响其它读线程）
+         Object[] newElements = Arrays.copyOf(elements, len + 1);
+         // 添加新元素
+         newElements[len] = e;
+         // 替换旧的数组
+         setArray(newElements);//setArray(newElements)： array = newElements;
+         return true;
+	}
+}
+```
+
+其它读操作并未加锁，适合『读多写少』的应用场景
+
+但是在get和遍历时会有弱一致性问题
+
+但不要觉得弱一致性就不好 
+
+* 数据库的 MVCC 都是弱一致性的表现 
+* **并发高和一致性是矛盾的**，需要权衡
