@@ -305,7 +305,7 @@ double y = 123.34E-2; // 123.34 / 10的平方
 
 #### 浮点型数据存储原理
 
-①符号位：0表示整数。1表示负数。
+①符号位：0表示正数。1表示负数。
 
 ②指数位：比如小数0.123E30，其中30就是指数。表示0.123 * 10的30次幂。所以也有把指数位叫做偏移量的。最大偏移量127。
 
@@ -1303,7 +1303,7 @@ package包机制：
   ```
 
 
-## IntelliJ IDEA
+# IntelliJ IDEA
 
 ### 常用快捷键
 
@@ -4640,9 +4640,9 @@ String 类代表字符串，Java 程序中的所有字符串文字（例如“ab
           
           System.out.println(s3 == s4); // false
   		/*s3指向的对象，没有在字符串常量池中。在堆中。
-  		底层实际上在进行 + 的时候，且这个 + 两边至少有一个是变量，会创建一个StringBuilder对象，进行字		符串的拼接，最后的时候会自动调用StringBuilder对象的toString()方法，再将StringBuilder转换成			String对象。*/
+  		底层实际上在进行 + 的时候，且这个 + 两边至少有一个是变量，会创建一个StringBuilder对象，进行字符串的拼接，最后的时		  候会自动调用StringBuilder对象的toString()方法，再将StringBuilder转换成String对象。
+  		*/
          
-  
           /*以下程序中 + 两边都是字符串字面量，这种情况java对其进行优化：
           在编译的时候就会进行字符串的拼接，因此以下程序在字符串常量池中只有一个： “javatest” */
   		String x = "java" + "test"; // 等同于：String x = "javatest";
