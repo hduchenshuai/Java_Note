@@ -216,9 +216,9 @@ JVM中的栈内存是给谁用的呢？其实就是线程，每个线程启动�
 | getPriority()    |        | 获取线程优先级                                               |                                                              |
 | setPriority(int) |        | 修改线程优先级                                               | java中规定线程优先级是1~10 的整数，较大的优先级能提高该线程被 CPU 调度的机率 |
 | getState()       |        | 获取线程状态                                                 | Java 中线程状态是用 6 个 enum 表示，分别为： NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED |
-| isInterrupted()  |        | 判断是否被打 断                                              | 不会清除 打断标记                                            |
+| isInterrupted()  |        | 判断是否被打断                                               | 判断线程是否被打断，是则返回true，否则返回false;**不会清除 打断标记** |
 | interrupt()      |        | 打断线程                                                     | 如果被打断线程正在 sleep，wait，join 会导致被打断的线程抛出 InterruptedException，并清除打断标记 （false)；如果打断的正在运行的线程，则会设置打断标记 ；park 的线程被打断，也会设置 打断标记 |
-| interrupted()    | static | 判断当前线程是 否被打断                                      | 会清除 打断标记                                              |
+| interrupted()    | static | 判断当前线程是 否被打断                                      | 与isInterrupted()的唯一区别就是：**会清除打断标记**          |
 | currentThread()  | static | 获取当前正在执 行的线程                                      |                                                              |
 | sleep(long n)    | static | 让当前执行的线程休眠n毫秒，休眠时让出 cpu 的时间片给其它线程 | 1. 调用 sleep 会让当前线程从 Running 进入 Timed Waiting 状态（阻塞） 2. 其它线程可以使用 interrupt 方法打断正在睡眠的线程，这时 sleep 方法会抛出 InterruptedException 3. 睡眠结束后的线程未必会立刻得到执行 4. 建议用 TimeUnit 的 sleep 代替 Thread 的 sleep 来获得更好的可读性 |
 | yield()          | static | 提示线程调度器让出当前线程对 CPU的使用                       | 1.调用 yield 会让当前线程从 Running 进入 Runnable 就绪状态，然后调度执行其它线程 2. 具体的实现依赖于操作系统的任务调度器 |
@@ -254,13 +254,53 @@ JVM中的栈内存是给谁用的呢？其实就是线程，每个线程启动�
 
 ###  interrupt()
 
+**打断 sleep，wait，join的线程**
 
+这几个方法都会让线程进入阻塞状态
 
+打断  sleep，wait，join 的线程, 它们都是以抛异常的方式来表示被打断，会清空打断状态（isInterrupted()返回false）
 
+**打断正常运行的线程**
+
+打断正常运行的线程, 不会清空打断状态（isInterrupted()返回true）
+
+对于正常运行的线程，其他线程去打断他只是会告诉他被打断了，但继不继续运行，还是自己说了算
+
+用如下代码示例可以优雅的打断线程，比如线程可以在被打断前处理一些善后工作
+
+```java
+private static void test2() throws InterruptedException {
+	Thread t2 = new Thread(()->{
+ 		while(true) {
+ 			Thread current = Thread.currentThread();
+ 			boolean interrupted = current.isInterrupted();
+ 			if(interrupted) {
+ 				log.debug(" 打断状态: {}", interrupted);
+				 break;
+ 			}
+ 		}
+ 	}, "t2");
+ 	t2.start();
+ 	sleep(0.5);
+ 	t2.interrupt();
+}
+```
+
+### 过时的方法
+
+以下是不推荐使用的方法，这些方法已过时，容易破坏同步代码块，造成线程死锁（比如强制打断时，该线程还持有锁，锁无法释放）
+
+* stop()  停止线程运行
+
+* suspend()  挂起（暂停）线程运行
+
+* resume()  恢复线程运行
 
 ## 守护线程
 
-默认情况下，Java 进程需要等待**所有**线程都运行结束，才会结束。有一种特殊的线程叫做守护线程，只要其它非守 护线程运行结束了，即使守护线程的代码没有执行完，也会强制结束。
+默认情况下，Java 进程需要等待**所有**线程都运行结束，才会结束。
+
+有一种特殊的线程叫做守护线程，只要其它非守护线程运行结束了，**即使守护线程的代码没有执行完**，也会强制结束。
 
 ```java
 // 设置该线程为守护线程
@@ -328,8 +368,6 @@ t1.start();
 * 阻塞式的解决方案：synchronized，Lock 
 * 非阻塞式的解决方案：原子变量 
 
-
-
 synchronized 俗称【对象锁】，它采用**互斥**的方式让同一 时刻至多只有一个线程能持有【对象锁】，其它线程再想获取这个【对象锁】时就会阻塞住。这样就能保证拥有锁的线程可以安全的执行临界区内的代码，不用担心线程上下文切换 
 
 ## 互斥与同步
@@ -376,7 +414,7 @@ public static void main(String[] args) throws InterruptedException {
 }
 ```
 
-synchronized 实际是用**对象锁保证了临界区内代码的原子性**，临界区内的代码对外是不可分割的，不会被线程切换所打断。
+synchronized 实际是用**对象锁**保证了**临界区内代码的原子性**，临界区内的代码对外是不可分割的，不会被线程切换所打断。
 
 * 如果把 synchronized(obj) 放在 for 循环的外面，如何理解？
   * -- 原子性 ：那么5000次for循环被视为不可分割的原子操作集
