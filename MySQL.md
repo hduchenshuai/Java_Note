@@ -470,23 +470,71 @@ MySQL中的函数主要分为以下四类： 字符串函数、数值函数、�
 2. 需要注意：添加条件之后，虽然避免了笛卡尔积现象，但是匹配的次数没有减少。
 3. 为了SQL语句的可读性，为了执行效率，建议给表起别名。
 
-内连接
+## 内连接
 
-内连接的语法分为两种: 隐式内连接、显式内连接
+满足条件的记录才会出现在结果集中
 
-* 隐式内连接
+语法：
+
+```sql
+SELECT 字段列表 FROM 表1 [ INNER ] JOIN 表2 ON 连接条件 ... ;
+```
+
+
+
+* 等值连接
+
+  连接时，条件为等量关系
 
   ```sql
-  SELECT 字段列表 FROM 表1 , 表2 WHERE 条件 ... ;
+  select
+  	e.ename,d.dname
+  from
+  	emp e
+  inner join
+  	dept d
+  on
+  	e.deptno = d.deptno;
   ```
 
-* 显式内连接
+* 非等值连接
 
+  连接时，条件是非等量关系
+  
   ```sql
-  SELECT 字段列表 FROM 表1 [ INNER ] JOIN 表2 ON 连接条件 ... ;
+  select
+  	e.ename,e.sal,s.grade
+  from
+  	emp e
+  join
+  	salgrade s
+  on
+  	e.sal between s.losal and s.hisal;
   ```
+  
+  
+  
+* 自连接
+
+  连接时，一张表看做两张表，自己和自己进行连接。
+  
+  ```sql
+  select
+  	e.ename 员工名, l.ename 领导名
+  from
+  	emp e
+  join
+  	emp l
+  on
+  	e.mgr = l.empno;
+  ```
+  
+  
 
 ## 外连接
+
+内连接是满足条件的记录查询出来。也就是两张表的交集。
+外连接是除了满足条件的记录查询出来，再将其中一张表的记录全部查询出来，另一张表如果没有与之匹配的记录，自动模拟出NULL与其匹配。
 
 外连接分为两种，分别是：左外连接 和 右外连接。具体的语法结构为：
 
@@ -502,9 +550,99 @@ MySQL中的函数主要分为以下四类： 字符串函数、数值函数、�
   SELECT 字段列表 FROM 表1 RIGHT [ OUTER ] JOIN 表2 ON 条件 ... ;
   ```
 
-## 自连接
+注：任何一个左连接都可以写作右连接，右连接也可转换成左连接
+
+
+
+## 全连接
+
+MySQL不支持full join。oracle数据库支持。
+
+两张表数据全部查询出来，没有匹配的记录，各自为对方模拟出NULL进行匹配。
+
+
 
 ## 子查询
+
+* select语句中嵌套select语句就叫做子查询
+
+* select语句可以嵌套在哪里？
+
+  ```SQL
+  select后面 -- select ..(select)..  
+  from后面 --  from ..(select)..
+  where后面 -- where ..(select)..  
+  ```
+
+* where后面使用子查询
+
+  ```sql
+  案例：找出高于平均薪资的员工姓名和薪资：
+  select ename,sal from emp where sal > (select avg(sal) from emp);
+  ```
+
+* from后面使用子查询
+
+  ```sql
+  from后面的子查询可以看做一张临时表
+  案例：找出每个部门的平均工资的等级：
+  第一步：先找出每个部门平均工资
+  select deptno, avg(sal) avgsal from emp group by deptno;
+  第二步：将以上查询结果当做临时表t，t表和salgrade表进行连接查询
+  select t.*,s.grade from (select deptno, avg(sal) avgsal from emp group by deptno) t join salgrade s on t.avgsal between s.losal and s.hisal;
+  ```
+
+* select后面使用子查询
+
+
+
+## exists、not exists
+
+* **exists**
+
+  EXISTS用于检查**子查询**的查询结果行数是否大于0。如果子查询的查询结果行数大于0，则 EXISTS 条件为真。（即存在查询结果则是true。）
+
+  ```sql
+  select * from t_customer c where exists(select * from t_order o where o.customer_id=c.customer_id);
+  ```
+
+  在这个查询语句中，子查询用于检查是否有订单与每个客户相关联。如果子查询返回**至少一行**，则表示该顾客已经下过订单，并返回此客户的所有信息，否则      该顾客将不被包含在结果中
+
+  
+
+* **not exists**
+
+  NOT EXISTS 用于检查一个子查询是否返回任何行，如果没有行返回，那么 NOT EXISTS 将返回 true。
+
+  ```sql
+  select * from t_customer c where not exists(select * from t_order o where o.customer_id=c.customer_id);
+  ```
+
+  在这个查询语句中，如果没有任何与顾客相关联的订单，则 NOT EXISTS 子查询将返回一个空结果集，这时候 WHERE 条件为 true，并将返回所有顾客信息。如果顾客有订单，则 NOT EXISTS 子查询的结果集将不为空，WHERE 条件为 false，则不会返回该顾客的信息。
+
+  
+
+## union&union all
+
+不管是union还是union all都可以将两个查询结果集进行合并
+
+union会对合并之后的查询结果集进行**去重**操作
+
+union all是直接将查询结果集合并，不进行去重操作
+
+
+
+案例：查询工作岗位是MANAGER和SALESMAN的员工：
+
+```sql
+select ename,sal from emp where job='MANAGER'
+union all
+select ename,sal from emp where job='SALESMAN';
+```
+
+注意：两个结果集合并时，**列数量要相同**
+
+
 
 # 视图
 
