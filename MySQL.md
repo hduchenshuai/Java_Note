@@ -727,6 +727,14 @@ alter view v_emp as select e.ename,d.dname,d.deptno from emp e join dept d on e.
 - 按照字段个数分类：
   - 单列索引、联合索引（也叫复合索引、组合索引）
 
+
+
+# 锁
+
+事务的**隔离性**由锁来实现
+
+
+
 # 数据库优化
 
 MySQL数据库的优化手段通常包括但不限于：
