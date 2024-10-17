@@ -172,6 +172,54 @@ Integer result = task3.get();
   * `jstack <PID>` 查看某个 Java 进程（PID）的所有线程状态 
   * `jconsole` 来查看某个 Java 进程中线程的运行情况（图形界面）
 
+**Jstack命令执行后有哪些信息**：
+
+````
+`jstack` 命令用于生成 Java 进程的线程堆栈信息，通常用于诊断 Java 应用程序的性能问题或死锁。执行 `jstack` 后，输出的信息主要包括以下几个部分：
+
+### 1. 线程信息
+- **线程 ID**：每个线程的唯一标识符（如 `0x00007f1c4c001800`）。
+- **线程名称**：线程的名称（如 `main`、`Worker-1` 等）。
+- **线程状态**：线程的当前状态（如 `RUNNABLE`、`BLOCKED`、`WAITING`、`TIMED_WAITING`、`TERMINATED`）。
+
+### 2. 堆栈跟踪
+- **方法调用栈**：每个线程的调用栈，显示线程当前执行的代码路径，包括：
+  - 类名和方法名。
+  - 源文件和行号（如果可用）。
+  - 方法调用的顺序（从最上层到最底层）。
+
+### 3. 锁信息
+- **持有锁的线程**：如果线程正在等待某个锁，输出中会显示持有该锁的线程信息。
+- **锁对象**：显示正在等待的锁的对象引用。
+- **锁的监视器**：如果线程被阻塞在某个监视器上，会显示相关信息。
+
+### 4. 其他信息
+- **Java 版本**：输出中通常会包含 Java 运行时的版本信息。
+- **操作系统信息**：包括操作系统的名称和版本。
+- **进程 ID**：执行 `jstack` 时所针对的 Java 进程的 ID。
+
+### 示例输出
+以下是 `jstack` 输出的一个简化示例：
+
+```
+"main" #1 prio=5 os_prio=0 tid=0x00007f1c4c001800 nid=0x1 runnable [0x00007f1c4c0c0000]
+   java.lang.Thread.State: RUNNABLE
+        at com.example.MyClass.myMethod(MyClass.java:10)
+        at com.example.Main.main(Main.java:5)
+
+"Worker-1" #2 prio=5 os_prio=0 tid=0x00007f1c4c002000 nid=0x2 waiting for monitor entry [0x00007f1c4c0b0000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+        at com.example.MyClass.anotherMethod(MyClass.java:20)
+        - waiting to lock <0x00007f1c4c0c0a00> (a java.lang.Object)
+        at com.example.MyClass.myMethod(MyClass.java:15)
+```
+
+### 总结
+通过 `jstack` 输出的信息，可以帮助开发者快速定位线程的状态、调用路径、锁竞争等问题，从而进行性能调优和故障排查。
+````
+
+
+
 ## 栈与栈帧
 
 JVM中的栈内存是给谁用的呢？其实就是线程，每个线程启动后，虚拟机就会为其分配一块栈内存。 
@@ -258,7 +306,7 @@ JVM中的栈内存是给谁用的呢？其实就是线程，每个线程启动�
 
 这几个方法都会让线程进入阻塞状态
 
-打断  sleep，wait，join 的线程, 它们都是以抛异常的方式来表示被打断，会清空打断状态（isInterrupted()返回false）
+打断  sleep，wait，join 的线程, 它们都是**以抛异常的方式来表示被打断**，会清空打断状态（isInterrupted()返回false）
 
 **打断正常运行的线程**
 
@@ -346,6 +394,8 @@ t1.start();
 # 共享模型之管程
 
 ## 临界区 
+
+临界区是指在并发编程中，多个线程或进程访问共享资源时，为了保证数据的一致性和正确性而需要互斥访问的代码段。
 
 * 一个程序运行多个线程本身是没有问题的 
 * 问题出在多个线程访问共享资源 
@@ -651,7 +701,6 @@ public static void method2() {
 
 * 当 Thread-0 退出同步块解锁时，使用 cas 将 Mark Word 的值恢复给对象头，失败。这时会进入重量级解锁 流程，即按照 Monitor 地址找到 Monitor 对象，设置 Owner 为 null，唤醒 EntryList 中 BLOCKED 线程
 
-  
 
 ### 自旋优化
 
@@ -725,6 +774,10 @@ Java 6 中引入了偏向锁来做进一步优化：只有第一次使用 CAS时
 
 
 
+## wait notify原理
+
+![02a9988fe5b68d3c9009f837e9ba806](../typora_repo/JUC/02a9988fe5b68d3c9009f837e9ba806.png)
+
 ## **变量的线程安全分析** 
 
 **实例变量**和**静态变量**是否线程安全？ 
@@ -763,6 +816,85 @@ Java 6 中引入了偏向锁来做进一步优化：只有第一次使用 CAS时
 * 它们的每个方法是原子的 
 
 * 但注意它们多个方法的组合不是原子的
+
+## 多把锁
+
+#### 死锁
+
+一个线程需要同时获取多把锁，这时就容易发生死锁
+
+t1 线程 获得 A对象 锁，接下来想获取 B对象 的锁， t2 线程 获得 B对象锁，接下来想获取 A对象 的锁 
+
+##### 定位死锁
+
+检测死锁可以使用 jconsole工具，或者使用 jps 定位进程 id，再用 jstack 定位死锁：
+
+避免死锁要注意加锁顺序另外如果由于某个线程进入了死循环，导致其它线程一直等待，对于这种情况 linux 下可以通过 top 先定位到CPU 占用高的 Java 进程，再利用 top -Hp 进程id 来定位是哪个线程，最后再用 jstack 排查
+
+```
+cmd > jps
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
+12320 Jps
+22816 KotlinCompileDaemon
+33200 TestDeadLock // JVM 进程
+11508 Main
+28468 Launcher
+```
+
+```
+cmd > jstack 33200
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
+2018-12-29 05:51:40
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (25.91-b14 mixed mode):
+"DestroyJavaVM" #13 prio=5 os_prio=0 tid=0x0000000003525000 nid=0x2f60 waiting on condition 
+[0x0000000000000000]
+ java.lang.Thread.State: RUNNABLE
+"Thread-1" #12 prio=5 os_prio=0 tid=0x000000001eb69000 nid=0xd40 waiting for monitor entry 
+[0x000000001f54f000]
+ java.lang.Thread.State: BLOCKED (on object monitor)
+ at thread.TestDeadLock.lambda$main$1(TestDeadLock.java:28)
+ - waiting to lock <0x000000076b5bf1c0> (a java.lang.Object)
+ - locked <0x000000076b5bf1d0> (a java.lang.Object)
+ at thread.TestDeadLock$$Lambda$2/883049899.run(Unknown Source)
+ at java.lang.Thread.run(Thread.java:745)
+"Thread-0" #11 prio=5 os_prio=0 tid=0x000000001eb68800 nid=0x1b28 waiting for monitor entry 
+[0x000000001f44f000]
+ java.lang.Thread.State: BLOCKED (on object monitor)
+ at thread.TestDeadLock.lambda$main$0(TestDeadLock.java:15)
+ - waiting to lock <0x000000076b5bf1d0> (a java.lang.Object)
+  - locked <0x000000076b5bf1c0> (a java.lang.Object)
+ at thread.TestDeadLock$$Lambda$1/495053715.run(Unknown Source)
+ at java.lang.Thread.run(Thread.java:745)
+ 
+// 略去部分输出
+Found one Java-level deadlock:
+=============================
+"Thread-1":
+ waiting to lock monitor 0x000000000361d378 (object 0x000000076b5bf1c0, a java.lang.Object),
+ which is held by "Thread-0"
+"Thread-0":
+ waiting to lock monitor 0x000000000361e768 (object 0x000000076b5bf1d0, a java.lang.Object),
+ which is held by "Thread-1"
+Java stack information for the threads listed above:
+===================================================
+"Thread-1":
+ at thread.TestDeadLock.lambda$main$1(TestDeadLock.java:28)
+ - waiting to lock <0x000000076b5bf1c0> (a java.lang.Object)
+ - locked <0x000000076b5bf1d0> (a java.lang.Object)
+ at thread.TestDeadLock$$Lambda$2/883049899.run(Unknown Source)
+ at java.lang.Thread.run(Thread.java:745)
+"Thread-0":
+ at thread.TestDeadLock.lambda$main$0(TestDeadLock.java:15)
+ - waiting to lock <0x000000076b5bf1d0> (a java.lang.Object)
+ - locked <0x000000076b5bf1c0> (a java.lang.Object)
+ at thread.TestDeadLock$$Lambda$1/495053715.run(Unknown Source)
+ at java.lang.Thread.run(Thread.java:745)
+Found 1 deadlock.
+```
+
+#### 活锁
+
+活锁出现在两个线程互相改变对方的结束条件，最后谁也无法结束
 
 
 
@@ -988,7 +1120,7 @@ public class Test {
 
 ### *交替打印
 
-Q：用三个线程分别交替打印打印abc，循环5次
+Q：用三个线程分别交替打印abc，循环5次
 
 A：
 
@@ -1218,23 +1350,81 @@ public class Main {
 
 JMM 即 Java Memory Model，它定义了主存、工作内存抽象概念，底层对应着 CPU 寄存器、缓存、硬件内存、CPU 指令优化等。
 
+![image-20241017164038665](../typora_repo/JUC/image-20241017164038665.png)
+
+* JMM定义了**共享内存**中**多线程程序读写操作**规范，通过这些规则保证指令的正确性
+* JMM把内存分为两块，一块是线程私有的工作内存，一块是所有线程的共享内存
+* 线程之间相互隔离，之间的交互需要通过主内存
+
+
+
 JMM 体现在以下几个方面：
 
-* 原子性 - 保证指令不会受到线程上下文切换的影响
+* 原子性 - 保证指令不会受到**线程上下文切换**的影响
 
-* 可见性 - 保证指令不会受 cpu 缓存的影响 （volatile, synchronized)
+* 可见性 - 保证指令不会受 **cpu 缓存**的影响 （volatile, synchronized)
 
-* 有序性 - 保证指令不会受 cpu 指令并行优化的影响
+* 有序性 - 保证指令不会受 cpu **指令并行优化**的影响
 
 
+
+## 可见性
+
+## 有序性
+
+JVM 会在不影响正确性的前提下，可以调整语句的执行顺序，这种特性称之为『指令重排』，多线程下『指令重排』会影响正确性。
 
 ## volatile（易变关键字）
 
 volatile 可以保证共享变量的**可见性**和**有序性**
 
-它可以用来修饰成员变量和静态成员变量，他可以避免线程从自己的工作缓存中查找变量的值，必须到主存中获取它的值，线程操作 volatile 变量都是直接操作主存
+* 对于可见性：
+  * volatile可以用来修饰成员变量和静态成员变量，他可以避免线程从自己的工作缓存中查找变量的值，必须到主存中获取它的值，线程操作 volatile 变量都是直接操作主存
+  * 它保证的是在多个线程之间，一个线程对 volatile 变量的修改对另一个（其他）线程可见， 不能保证原子性，**仅用在一个写线程，多个读线程的情况**
 
-volatile 体现的实际就是可见性，它保证的是在多个线程之间，一个线程对 volatile 变量的修改对另一个（其他）线程可见， 不能保证原子性，**仅用在一个写线程，多个读线程的情况**
+* 对于有序性：
+
+  volatile 修饰的变量，可以禁用指令重排
+
+
+
+**volatile** **原理**
+
+* **保证可见性原理**
+
+  对 volatile 变量的写指令后会加入写屏障，写屏障（sfence）保证在该屏障**之前的**，对共享变量的改动，都同步到主存当中
+
+  对 volatile 变量的读指令前会加入读屏障，读屏障（lfence）保证在该屏障**之后**，对共享变量的读取，加载的是主存中最新数据
+
+  ![image-20241017165747359](../typora_repo/JUC/image-20241017165747359.png)
+
+* **保证有序性原理**
+
+  * 写屏障会确保指令重排序时，不会将写屏障之前的代码排在写屏障之后
+
+  * 读屏障会确保指令重排序时，不会将读屏障之后的代码排在读屏障之前
+
+
+
+# 共享模型之无锁
+
+## CAS
+
+![image-20241017203843385](../typora_repo/JUC/image-20241017203843385.png)
+
+CAS 的底层是 lock cmpxchg 指令（X86 架构），在单核 CPU 和多核 CPU 下都能够保证【比较-交换】的原子性。
+
+在多核状态下，某个核执行到带 lock 的指令时，CPU 会让总线锁住，当这个核把此指令执行完毕，再开启总线。这个过程中不会被线程的调度机制所打断，保证了多个线程对内存操作的准确性，是原子的
+
+CAS 必须借助 volatile 才能读取到共享变量的最新值来实现【比较并交换】的效果
+
+## **为什么无锁效率高**
+
+无锁情况下，即使重试失败，线程始终在高速运行，没有停歇，而 synchronized 会让线程在没有获得锁的时候，发生上下文切换，进入阻塞。打个比喻
+
+线程就好像高速跑道上的赛车，高速运行时，速度超快，一旦发生上下文切换，就好比赛车要减速、熄火，等被唤醒又得重新打火、启动、加速... 恢复到高速运行，代价比较大
+
+但无锁情况下，因为线程要保持运行，需要额外 CPU 的支持，CPU 在这里就好比高速跑道，没有额外的跑道，线程想高速运行也无从谈起，虽然不会进入阻塞，但由于没有分到时间片，仍然会进入可运行状态，还是会导致上下文切换。
 
 
 
@@ -1242,7 +1432,219 @@ volatile 体现的实际就是可见性，它保证的是在多个线程之间�
 
 ## 线程池
 
+###  **ThreadPoolExecutor**
+
+![image-20241017125359276](../typora_repo/JUC/image-20241017125359276.png)
+
+#### 线程池状态
+
+![image-20241017125703040](../typora_repo/JUC/image-20241017125703040.png)
+
+#### 构造方法
+
+```Java
+public ThreadPoolExecutor(int corePoolSize,
+                          int maximumPoolSize,
+                          long keepAliveTime,
+                          TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue,
+                          ThreadFactory threadFactory,
+                          RejectedExecutionHandler handler)
+```
+
+* corePoolSize 核心线程数目 (最多保留的线程数)
+
+* maximumPoolSize 最大线程数目
+
+* keepAliveTime 生存时间 - 针对救急线程
+
+* unit 时间单位 - 针对救急线程
+
+* workQueue 阻塞队列
+
+* threadFactory 线程工厂 - 可以为线程创建时起个好名字
+
+* handler 拒绝策略
+
+#### 工作方式
+
+* 线程池中刚开始没有线程，当一个任务提交给线程池后，线程池会创建一个新线程来执行任务。
+
+* 当线程数达到 corePoolSize 并没有线程空闲，这时再加入任务，新加的任务会被加入workQueue 队列排队，直到有空闲的线程。
+* 如果队列选择了有界队列，那么任务超过了队列大小时，会创建 maximumPoolSize - corePoolSize 数目的线程来救急。
+* 如果线程到达 maximumPoolSize 仍然有新任务这时会执行拒绝策略。拒绝策略 jdk 提供了 4 种实现，其它著名框架也提供了实现
+  * AbortPolicy 让调用者抛出 RejectedExecutionException 异常，这是默认策略
+  * CallerRunsPolicy 让调用者运行任务
+  * DiscardPolicy 放弃本次任务
+  * DiscardOldestPolicy 放弃队列中最早的任务，本任务取而代之
+  * Dubbo 的实现，在抛出 RejectedExecutionException 异常之前会记录日志，并 dump 线程栈信息，方便定位问题
+  * Netty 的实现，是创建一个新线程来执行任务
+  * ActiveMQ 的实现，带超时等待（60s）尝试放入队列，类似我们之前自定义的拒绝策略
+  * PinPoint 的实现，它使用了一个拒绝策略链，会逐一尝试策略链中每种拒绝策略
+
+* 当高峰过去后，超过corePoolSize 的救急线程如果一段时间没有任务做，需要结束节省资源，这个时间由keepAliveTime 和 unit 来控制。
+
+根据这个构造方法，JDK `Executors` 类中提供了众多工厂方法来创建各种用途的线程池
+
+#### **newFixedThreadPool**
+
+```Java
+public static ExecutorService newFixedThreadPool(int nThreads) {
+        return new ThreadPoolExecutor(nThreads, nThreads,
+                                      0L, TimeUnit.MILLISECONDS,
+                                      new LinkedBlockingQueue<Runnable>());
+}
+```
+
+特点
+
+核心线程数 == 最大线程数（没有救急线程被创建），因此也无需超时时间
+
+阻塞队列是无界的，可以放任意数量的任务
+
+**评价** 适用于任务量已知，相对耗时的任务
+
+
+
+#### **newCachedThreadPool**
+
+特点
+
+核心线程数是 0， 最大线程数是 Integer.MAX_VALUE，救急线程的空闲生存时间是 60s，意味着
+
+全部都是救急线程（60s 后可以回收）
+
+救急线程可以无限创建
+
+队列采用了 SynchronousQueue 实现特点是，它没有容量，没有线程来取是放不进去的（一手交钱、一手交货）
+
+**评价** 整个线程池表现为线程数会根据任务量不断增长，没有上限，当任务执行完毕，空闲 1分钟后释放线程。 适合任务数比较密集，但每个任务执行时间较短的情况
+
+#### **newSingleThreadExecutor**
+
+![6122210656642cdc058bd7de39d4b55](../typora_repo/JUC/6122210656642cdc058bd7de39d4b55.png)
+
+#### 提交任务
+
+```Java
+// 执行任务
+void execute(Runnable command);
+// 提交任务 task，用返回值 Future 获得任务执行结果
+<T> Future<T> submit(Callable<T> task);
+// 提交 tasks 中所有任务
+<T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
+ throws InterruptedException;
+// 提交 tasks 中所有任务，带超时时间
+<T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks,
+ long timeout, TimeUnit unit)
+ throws InterruptedException;
+// 提交 tasks 中所有任务，哪个任务先成功执行完毕，返回此任务执行结果，其它任务取消
+<T> T invokeAny(Collection<? extends Callable<T>> tasks)
+ throws InterruptedException, ExecutionException;
+ // 提交 tasks 中所有任务，哪个任务先成功执行完毕，返回此任务执行结果，其它任务取消，带超时时间
+<T> T invokeAny(Collection<? extends Callable<T>> tasks,
+ long timeout, TimeUnit unit)
+ throws InterruptedException, ExecutionException, TimeoutException;
+```
+
+#### 关闭线程池
+
+##### shutdown
+
+线程池状态变为 SHUTDOWN
+
+不会接收新任务
+
+但已提交任务会执行完
+
+此方法不会阻塞调用线程的执行
+
+
+
+##### **shutdownNow**
+
+线程池状态变为 STOP
+
+\- 不会接收新任务
+
+\- 会将队列中的任务返回
+
+\- 并用 interrupt 的方式中断正在执行的任务
+
+
+
+### **Fork/Join**
+
+Fork/Join 是 JDK 1.7 加入的新的线程池实现，它体现的是一种分治思想，适用于能够进行任务拆分的 cpu 密集型
+
+运算
+
+所谓的任务拆分，是将一个大任务拆分为算法上相同的小任务，直至不能拆分可以直接求解。跟递归相关的一些计
+
+算，如归并排序、斐波那契数列、都可以用分治思想进行求解
+
+Fork/Join 在分治的基础上加入了多线程，可以把每个任务的分解和合并交给不同的线程来完成，进一步提升了运
+
+算效率
+
+Fork/Join 默认会创建与 cpu 核心数大小相同的线程池
+
+
+
+### 两种线程池的区别
+
+```
+**Fork/Join** 框架和 **ThreadPoolExecutor** 线程池是 Java 中用于并发编程的两种不同机制，它们之间有几个关键区别：
+
+### 1. 设计目的
+- **Fork/Join**:
+  - 主要用于处理大规模的并行计算任务，尤其是可以递归分解的任务（例如，分治算法）。
+  - 通过将任务分解成多个子任务并在多个线程中并行执行，最终合并结果。
+
+- **ThreadPoolExecutor**:
+  - 设计用于管理线程池和执行任务，适用于需要高效管理线程的场景。
+  - 可以处理多种类型的任务，不限于递归分解的情况。
+
+### 2. 任务处理模型
+- **Fork/Join**:
+  - 使用 **ForkJoinPool**，支持“工作窃取”算法。空闲的工作线程可以窃取其他线程的任务，从而提高资源利用率。
+  - 任务通过 `fork()` 方法提交，使用 `join()` 方法等待结果。
+
+- **ThreadPoolExecutor**:
+  - 通过 `execute()` 或 `submit()` 方法提交任务，使用固定数量的线程来处理任务。
+  - 任务是独立的，线程池不会自动调整任务的分配。
+
+### 3. 任务粒度
+- **Fork/Join**:
+  - 适合处理粒度较小的任务，能够有效地将大任务拆分成更小的子任务并行处理。
+
+- **ThreadPoolExecutor**:
+  - 更适合处理相对较大的独立任务，适用于需要执行的任务数量较多且相对独立的场景。
+
+### 4. 性能优化
+- **Fork/Join**:
+  - 通过工作窃取机制，能够更好地利用 CPU 资源，尤其是在多核处理器上表现优异。
+  - 自动调整工作线程的数量以适应负载。
+
+- **ThreadPoolExecutor**:
+  - 通过配置核心线程数、最大线程数、队列类型等参数来优化性能，但不具备 Fork/Join 的自动调整能力。
+
+### 5. 使用场景
+- **Fork/Join**:
+  - 适合需要递归分解的任务，如排序、矩阵乘法、图像处理等。
+
+- **ThreadPoolExecutor**:
+  - 适合需要并发执行的独立任务，如网络请求处理、文件处理等。
+
+### 总结
+**Fork/Join** 适用于需要高效并行处理和递归分解任务的场景，而 **ThreadPoolExecutor** 更加灵活，适合处理各种独立任务。选择哪种机制取决于具体的应用需求和任务特性。
+```
+
+
+
 ## JUC
+
+
 
 ### AQS
 

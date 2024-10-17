@@ -6310,9 +6310,9 @@ ArrayList 源码分析：
 
 使用无参构造时，底层数组长度默认为0，当添加第一个元素时，开始扩容为***DEFAULT_CAPACITY* = 10**；
 
-进行添加操作时，判断当元素个数与底层数组长度相等，会再次扩容，扩容规则：比较此次添加元素的个（minCapacity - oldCapacity）与默认新增容量（oldCapacity >>1: 数组扩容前的长度右移1位）的大小，谁大就扩容谁的大小；
+进行添加操作时，判断当元素个数与底层数组长度是否相等，相等时会再次扩容，扩容规则：比较此次添加元素的个数（minCapacity - oldCapacity）与默认新增容量（oldCapacity >>1: 数组扩容前的长度右移1位）的大小，谁大就扩容谁的大小；
 
-当minCapacity - oldCapacity  < oldCapacity >>时：
+当minCapacity - oldCapacity  < oldCapacity >>1时：
 
 相当于扩容**到**原始容量的1.5倍
 
@@ -6325,6 +6325,12 @@ ArrayList 源码分析：
 * 底层双向链表
 * 可以加null
 * 线程不安全
+
+`LinkedList` 不涉及扩容机制，因为它的底层实现是通过节点（Node）来存储元素，而不是使用数组。
+
+- **添加元素**：使用 `add()` 方法时，`LinkedList` 会创建一个新的节点并将其链接到列表的末尾或指定位置。
+- **删除元素**：使用 `remove()` 方法时，`LinkedList` 会调整指针以移除指定节点，保持链表的完整性。
+- **遍历**：通过迭代器或增强的 for 循环遍历链表时，`LinkedList` 会逐个访问节点。
 
 ### Vector
 
