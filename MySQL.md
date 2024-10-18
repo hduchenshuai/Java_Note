@@ -666,6 +666,8 @@ alter view v_emp as select e.ename,d.dname,d.deptno from emp e join dept d on e.
    1. drop view if exists v_emp;
 6. 对视图增删改（DML：insert delete update）可以影响到原表数据。
 
+存储引擎
+
 # 索引
 
 ## 什么是索引？
