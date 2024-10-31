@@ -670,9 +670,11 @@ alter view v_emp as select e.ename,d.dname,d.deptno from emp e join dept d on e.
 
 # 索引
 
+![11ff3dc81fe9569d3726d0d3420c3fd](../typora_repo/MySQL/11ff3dc81fe9569d3726d0d3420c3fd.png)
+
 ## 什么是索引？
 
-索引是一种能够提高检索（查询）效率的提前排好序的数据结构。例如：书的目录就是一种索引机制。索引是解决SQL慢查询的一种方式。
+索引的定义就是帮助存储引擎快速获取数据的一种数据结构，形象的说就是**索引是数据的目录**。
 
 ## 索引的创建和删除
 
